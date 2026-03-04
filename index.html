@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Selection System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <div class="theme-switch" id="theme-toggle" title="Toggle Light/Dark Mode">
+        🌓
+    </div>
+
+    <div class="container">
+        <h1>Timetable Selection</h1>
+
+        <div class="login-box">
+            <h2>Select Your Role</h2>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button onclick="location.href='student.html'">Student Portal</button>
+                <button onclick="location.href='teacher.html'">Teacher Portal</button>
+                <button onclick="location.href='admin.html'">Administrator</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+
+        // Check for saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.setAttribute('data-theme', savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    </script>
+
+</body>
+
+</html>

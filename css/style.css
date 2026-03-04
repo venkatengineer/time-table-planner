@@ -1,0 +1,204 @@
+:root {
+    /* Light Mode Variables */
+    --bg-color: #e0e5ec;
+    --text-color: #31344b;
+    --shadow-light: #ffffff;
+    --shadow-dark: #a3b1c6;
+    --accent-color: #007BFF;
+    --accent-hover: #0056b3;
+    --inset-shadow: inset 2px 2px 5px var(--shadow-dark),
+        inset -5px -5px 10px var(--shadow-light);
+    --outset-shadow: 6px 6px 16px var(--shadow-dark),
+        -6px -6px 16px var(--shadow-light);
+    --transition: all 0.3s ease;
+}
+
+[data-theme="dark"] {
+    /* Dark Mode Variables */
+    --bg-color: #2d3436;
+    --text-color: #dfe6e9;
+    --shadow-light: #3d4648;
+    --shadow-dark: #1d2122;
+    --accent-color: #0984e3;
+    --accent-hover: #74b9ff;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    transition: var(--transition);
+    min-height: 100vh;
+}
+
+.container {
+    padding: 50px 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    text-shadow: 2px 2px 4px var(--shadow-dark);
+}
+
+.login-box,
+.admin-box,
+.card {
+    background: var(--bg-color);
+    padding: 30px;
+    width: 320px;
+    margin: 30px auto;
+    border-radius: 20px;
+    box-shadow: var(--outset-shadow);
+    transition: var(--transition);
+}
+
+button {
+    padding: 12px 25px;
+    margin: 15px;
+    border: none;
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-radius: 12px;
+    box-shadow: var(--outset-shadow);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+    outline: none;
+}
+
+button:hover {
+    box-shadow: 3px 3px 8px var(--shadow-dark),
+        -3px -3px 8px var(--shadow-light);
+    transform: translateY(-2px);
+    color: var(--accent-color);
+}
+
+button:active {
+    box-shadow: var(--inset-shadow);
+    transform: translateY(0);
+}
+
+.submit {
+    background: var(--accent-color);
+    color: white;
+}
+
+.submit:hover {
+    background: var(--accent-hover);
+    color: white;
+}
+
+table {
+    margin: 40px auto;
+    border-collapse: separate;
+    border-spacing: 15px;
+    width: 90%;
+    max-width: 1000px;
+}
+
+th,
+td {
+    padding: 20px;
+    border-radius: 15px;
+    background: var(--bg-color);
+    box-shadow: var(--outset-shadow);
+    transition: var(--transition);
+}
+
+th {
+    font-weight: bold;
+    color: var(--accent-color);
+}
+
+select {
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: var(--bg-color);
+    box-shadow: var(--inset-shadow);
+    color: var(--text-color);
+    outline: none;
+    cursor: pointer;
+    width: 100%;
+}
+
+/* Theme Toggle */
+.theme-switch {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--outset-shadow);
+    background: var(--bg-color);
+    z-index: 1000;
+}
+
+.theme-switch:active {
+    box-shadow: var(--inset-shadow);
+}
+
+/* Drag and Drop Styles */
+.draggable-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 40px;
+}
+
+.teacher-list {
+    width: 250px;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: var(--inset-shadow);
+    min-height: 400px;
+}
+
+.teacher-card {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 15px;
+    box-shadow: var(--outset-shadow);
+    cursor: grab;
+    background: var(--bg-color);
+    transition: var(--transition);
+}
+
+.teacher-card:active {
+    cursor: grabbing;
+}
+
+.teacher-card.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+.drop-zone {
+    min-height: 60px;
+    border-radius: 10px;
+    box-shadow: var(--inset-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    transition: var(--transition);
+}
+
+.drop-zone.hover {
+    background: rgba(0, 123, 255, 0.1);
+    box-shadow: inset 4px 4px 10px var(--shadow-dark),
+        inset -4px -4px 10px var(--shadow-light);
+}

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Timetable Selection</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <div class="theme-switch" id="theme-toggle" title="Toggle Light/Dark Mode">
+        🌓
+    </div>
+
+    <div class="container">
+        <h1>Student Timetable Selection</h1>
+
+        <div class="draggable-container">
+            <!-- Teacher Side Panel -->
+            <div class="teacher-list">
+                <h3>Available Faculty</h3>
+                <p style="font-size: 0.8rem; opacity: 0.7;">Drag a teacher to a slot</p>
+
+                <div class="teacher-card" draggable="true" id="prof-arun">Prof. Arun (Math)</div>
+                <div class="teacher-card" draggable="true" id="prof-ravi">Prof. Ravi (Math)</div>
+                <div class="teacher-card" draggable="true" id="prof-meena">Prof. Meena (Math)</div>
+                <div class="teacher-card" draggable="true" id="prof-kumar">Prof. Kumar (Physics)</div>
+                <div class="teacher-card" draggable="true" id="prof-deepa">Prof. Deepa (Physics)</div>
+                <div class="teacher-card" draggable="true" id="prof-akash">Prof. Akash (CS)</div>
+            </div>
+
+            <!-- Timetable Main Section -->
+            <div style="flex: 1;">
+                <table>
+                    <tr>
+                        <th>Time Slot</th>
+                        <th>Subject</th>
+                        <th>Assigned Teacher</th>
+                    </tr>
+                    <tr>
+                        <td>09:00 - 10:00</td>
+                        <td>Mathematics</td>
+                        <td>
+                            <div class="drop-zone" id="slot-1">Drop Teacher Here</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>10:00 - 11:00</td>
+                        <td>Physics</td>
+                        <td>
+                            <div class="drop-zone" id="slot-2">Drop Teacher Here</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>11:00 - 12:00</td>
+                        <td>Computer Science</td>
+                        <td>
+                            <div class="drop-zone" id="slot-3">Drop Teacher Here</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <div style="margin-top: 30px; display: flex; justify-content: center; gap: 20px;">
+                    <button onclick="location.href='index.html'">Back to Home</button>
+                    <button class="submit">Confirm Timetable</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Switch Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.setAttribute('data-theme', savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // Drag and Drop Logic
+        const teacherCards = document.querySelectorAll('.teacher-card');
+        const dropZones = document.querySelectorAll('.drop-zone');
+
+        teacherCards.forEach(card => {
+            card.addEventListener('dragstart', () => {
+                card.classList.add('dragging');
+            });
+
+            card.addEventListener('dragend', () => {
+                card.classList.remove('dragging');
+            });
+        });
+
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('hover');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('hover');
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('hover');
+
+                const draggingCard = document.querySelector('.dragging');
+
+                // If the zone already has a teacher, we can replace it (or return the old card to the list if we had logic for that)
+                // For now, let's just clone the text and styling or move the content
+                zone.textContent = draggingCard.textContent;
+                zone.style.color = 'var(--accent-color)';
+                zone.style.fontWeight = 'bold';
+
+                // Small animation effect
+                zone.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    zone.style.transform = 'scale(1)';
+                }, 200);
+            });
+        });
+    </script>
+
+</body>
+
+</html>
