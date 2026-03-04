@@ -1,48 +1,279 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timetable Selection System</title>
+    <title>EduSchedule — Smart Timetable Management</title>
+    <meta name="description"
+        content="AI-powered smart timetable scheduling system for colleges and universities. Manage faculty, courses and class slots seamlessly.">
     <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
+    <div class="page-wrapper">
 
-    <div class="theme-switch" id="theme-toggle" title="Toggle Light/Dark Mode">
-        🌓
-    </div>
-
-    <div class="container">
-        <h1>Timetable Selection</h1>
-
-        <div class="login-box">
-            <h2>Select Your Role</h2>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button onclick="location.href='student.html'">Student Portal</button>
-                <button onclick="location.href='teacher.html'">Teacher Portal</button>
-                <button onclick="location.href='admin.html'">Administrator</button>
+        <!-- NAVBAR -->
+        <nav class="navbar">
+            <a class="nav-brand" href="index.html">
+                <div class="nav-logo">📅</div>
+                <div>
+                    <div class="nav-title">EduSchedule</div>
+                    <div class="nav-subtitle">Smart Timetable System</div>
+                </div>
+            </a>
+            <div class="nav-actions">
+                <button class="theme-switch" id="theme-toggle" title="Toggle theme">🌓</button>
             </div>
-        </div>
-    </div>
+        </nav>
+
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                Academic Year 2025–26 — Semester II
+            </div>
+            <h1>Intelligent Timetable<br>Scheduling Made Simple</h1>
+            <p>Assign faculty, manage time slots, and publish schedules — all from one elegant, drag-and-drop interface
+                designed for modern institutions.</p>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-num">24</div>
+                    <div class="stat-label">Faculty Members</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">6</div>
+                    <div class="stat-label">Departments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">48</div>
+                    <div class="stat-label">Weekly Slots</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">12</div>
+                    <div class="stat-label">Classrooms</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">860</div>
+                    <div class="stat-label">Students Enrolled</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROLE CARDS -->
+        <section class="roles-section">
+            <h2 class="roles-title">Choose Your Portal</h2>
+            <div class="roles-grid">
+
+                <div class="role-card" onclick="location.href='student.html'">
+                    <div class="role-icon student">🎓</div>
+                    <h3>Student Portal</h3>
+                    <p>View your personalised weekly timetable, track sessions and explore available faculty.</p>
+                    <span class="role-btn blue">Enter Portal →</span>
+                </div>
+
+                <div class="role-card" onclick="location.href='teacher.html'">
+                    <div class="role-icon teacher">👩‍🏫</div>
+                    <h3>Faculty Portal</h3>
+                    <p>Mark your availability, view assigned classes and manage your weekly schedule easily.</p>
+                    <span class="role-btn green">Enter Portal →</span>
+                </div>
+
+                <div class="role-card" onclick="location.href='admin.html'">
+                    <div class="role-icon admin">🛠️</div>
+                    <h3>Administrator</h3>
+                    <p>Drag-and-drop faculty into time slots, approve timetables and publish to all students.</p>
+                    <span class="role-btn amber">Enter Portal →</span>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- FEATURES -->
+        <section class="features-section">
+            <div class="container">
+                <div class="section-head">
+                    <h2>Why EduSchedule?</h2>
+                    <p>Everything you need to manage academic scheduling in one place.</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">🖱️</span>
+                        <h4>Drag & Drop Scheduling</h4>
+                        <p>Simply drag a faculty card onto any time slot in the Teams-style calendar. Instant, smooth
+                            and conflict-aware.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">⚡</span>
+                        <h4>Real-Time Updates</h4>
+                        <p>Changes propagate instantly across student and faculty views. No page refreshes needed.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🎨</span>
+                        <h4>Color-Coded Subjects</h4>
+                        <p>Each subject has a unique color. Spot clashes and patterns at a glance across the entire
+                            week.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">📊</span>
+                        <h4>Smart Analytics</h4>
+                        <p>Load balance faculty hours automatically. Get warnings on overloaded schedules.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🌙</span>
+                        <h4>Dark & Light Mode</h4>
+                        <p>Neumorphic design adapts beautifully to both themes. Works great on any screen.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">📱</span>
+                        <h4>Mobile Responsive</h4>
+                        <p>Full-featured on tablets and phones. Timetables on the go, no app download needed.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TIMETABLE PREVIEW -->
+        <section style="padding: 60px 32px;">
+            <div class="container">
+                <div class="section-head">
+                    <h2>This Week's Schedule</h2>
+                    <p>Department of Computer Science — Week of 03 Mar 2026</p>
+                </div>
+                <div
+                    style="background: var(--surface); border-radius: var(--radius); box-shadow: var(--neu-out); overflow: hidden; animation: fadeInUp 0.5s ease;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>TIME</th>
+                                <th>MONDAY</th>
+                                <th>TUESDAY</th>
+                                <th>WEDNESDAY</th>
+                                <th>THURSDAY</th>
+                                <th>FRIDAY</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-muted" style="font-weight:600; font-size:0.78rem;">09:00–10:00</td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#4f6ef7;display:inline-block;"></span>Prof.
+                                        Arun <span
+                                            style="font-size:0.72rem;color:var(--text2);">Mathematics</span></span></td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#06b6d4;display:inline-block;"></span>Prof.
+                                        Akash <span style="font-size:0.72rem;color:var(--text2);">CS</span></span></td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#4f6ef7;display:inline-block;"></span>Prof.
+                                        Arun <span
+                                            style="font-size:0.72rem;color:var(--text2);">Mathematics</span></span></td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#7c3aed;display:inline-block;"></span>Prof.
+                                        Kumar <span style="font-size:0.72rem;color:var(--text2);">Physics</span></span>
+                                </td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#10b981;display:inline-block;"></span>Prof.
+                                        Meena <span
+                                            style="font-size:0.72rem;color:var(--text2);">Chemistry</span></span></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted" style="font-weight:600; font-size:0.78rem;">10:00–11:00</td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#7c3aed;display:inline-block;"></span>Prof.
+                                        Kumar <span style="font-size:0.72rem;color:var(--text2);">Physics</span></span>
+                                </td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#4f6ef7;display:inline-block;"></span>Prof.
+                                        Ravi <span
+                                            style="font-size:0.72rem;color:var(--text2);">Mathematics</span></span></td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#06b6d4;display:inline-block;"></span>Prof.
+                                        Akash <span style="font-size:0.72rem;color:var(--text2);">CS</span></span></td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#f59e0b;display:inline-block;"></span>Prof.
+                                        Sita <span style="font-size:0.72rem;color:var(--text2);">English</span></span>
+                                </td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#4f6ef7;display:inline-block;"></span>Prof.
+                                        Arun <span
+                                            style="font-size:0.72rem;color:var(--text2);">Mathematics</span></span></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted" style="font-weight:600; font-size:0.78rem;">11:00–12:00</td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#10b981;display:inline-block;"></span>Prof.
+                                        Meena <span
+                                            style="font-size:0.72rem;color:var(--text2);">Chemistry</span></span></td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#7c3aed;display:inline-block;"></span>Prof.
+                                        Deepa <span style="font-size:0.72rem;color:var(--text2);">Physics</span></span>
+                                </td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#f59e0b;display:inline-block;"></span>Prof.
+                                        Sita <span style="font-size:0.72rem;color:var(--text2);">English</span></span>
+                                </td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#06b6d4;display:inline-block;"></span>Prof.
+                                        Akash <span style="font-size:0.72rem;color:var(--text2);">CS</span></span></td>
+                                <td><span style="display:flex;align-items:center;gap:7px;"><span
+                                            style="width:9px;height:9px;border-radius:3px;background:#7c3aed;display:inline-block;"></span>Prof.
+                                        Kumar <span style="font-size:0.72rem;color:var(--text2);">Physics</span></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-brand">📅 EduSchedule</div>
+                <p style="font-size:0.85rem; color:var(--text2); margin-bottom:16px;">Modern timetable management for
+                    academic institutions</p>
+                <div class="footer-links">
+                    <a href="student.html">Student Portal</a>
+                    <a href="teacher.html">Faculty Portal</a>
+                    <a href="admin.html">Admin Panel</a>
+                    <a href="#">Help & Support</a>
+                    <a href="#">Privacy Policy</a>
+                </div>
+                <div class="divider"></div>
+                <div class="footer-copy">© 2026 EduSchedule — Department of Computer Science. Academic Year 2025–26.
+                </div>
+            </div>
+        </footer>
+
+    </div><!-- page-wrapper -->
+
+    <div id="toast-container"></div>
 
     <script>
-        const themeToggle = document.getElementById('theme-toggle');
-        const body = document.body;
+        // Theme
+        const tt = document.getElementById('theme-toggle');
+        const saved = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', saved);
+        tt.addEventListener('click', () => {
+            const cur = document.documentElement.getAttribute('data-theme');
+            const next = cur === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        });
 
-        // Check for saved theme
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        body.setAttribute('data-theme', savedTheme);
-
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
+        // Animate stats counters
+        document.querySelectorAll('.stat-num').forEach(el => {
+            const target = parseInt(el.textContent);
+            let count = 0;
+            const step = Math.max(1, Math.floor(target / 30));
+            const interval = setInterval(() => {
+                count = Math.min(count + step, target);
+                el.textContent = count;
+                if (count >= target) clearInterval(interval);
+            }, 40);
         });
     </script>
-
 </body>
 
 </html>

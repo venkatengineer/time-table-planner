@@ -1,39 +1,489 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="light">
+
 <head>
-<title>Admin Panel</title>
-<link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — EduSchedule</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+
+        @media (max-width: 800px) {
+            .admin-grid-2col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .admin-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--neu-out);
+            padding: 24px;
+            animation: fadeInUp 0.5s ease both;
+        }
+
+        .admin-card-title {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .faculty-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: var(--transition-fast);
+        }
+
+        [data-theme="dark"] .faculty-row {
+            border-bottom-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .faculty-row:last-child {
+            border-bottom: none;
+        }
+
+        .faculty-row:hover {
+            transform: translateX(4px);
+        }
+
+        .fa-mini {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .fa-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .fa-name {
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .fa-sub {
+            font-size: 0.72rem;
+            color: var(--text2);
+        }
+
+        .fa-hours {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text2);
+        }
+
+        .progress-bar-wrap {
+            background: var(--bg);
+            box-shadow: var(--neu-in);
+            border-radius: 6px;
+            height: 6px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .notif-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] .notif-item {
+            border-bottom-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .notif-item:last-child {
+            border-bottom: none;
+        }
+
+        .notif-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-top: 5px;
+            flex-shrink: 0;
+        }
+
+        .notif-text {
+            font-size: 0.83rem;
+            line-height: 1.5;
+        }
+
+        .notif-text strong {
+            font-weight: 700;
+        }
+
+        .notif-time {
+            font-size: 0.7rem;
+            color: var(--text2);
+            margin-top: 2px;
+        }
+
+        .mini-cal {
+            display: grid;
+            grid-template-columns: 60px repeat(5, 1fr);
+            gap: 4px;
+            font-size: 0.68rem;
+        }
+
+        .mini-cal-head {
+            text-align: center;
+            font-weight: 700;
+            color: var(--text2);
+            padding: 4px;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+        }
+
+        .mini-cal-time {
+            color: var(--text2);
+            font-weight: 600;
+            padding: 4px;
+            text-align: right;
+        }
+
+        .mini-cell {
+            border-radius: 6px;
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.62rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            box-shadow: var(--neu-sm);
+            text-align: center;
+            padding: 2px 3px;
+        }
+
+        .mini-cell:hover {
+            transform: scale(1.05);
+            box-shadow: var(--neu-out);
+        }
+
+        .mini-cell.empty {
+            background: var(--bg);
+            color: var(--text2);
+        }
+
+        .mini-cell.filled {
+            color: #fff;
+        }
+    </style>
 </head>
 
 <body>
+    <div class="page-wrapper">
 
-<h1>Admin Dashboard</h1>
+        <nav class="navbar">
+            <a class="nav-brand" href="index.html">
+                <div class="nav-logo">📅</div>
+                <div>
+                    <div class="nav-title">EduSchedule</div>
+                    <div class="nav-subtitle">Admin Panel</div>
+                </div>
+            </a>
+            <div class="nav-actions">
+                <a href="student.html" class="nav-back">🗓 View Timetable</a>
+                <a href="index.html" class="nav-back">← Home</a>
+                <button class="theme-switch" id="theme-toggle">🌓</button>
+            </div>
+        </nav>
 
-<div class="admin-box">
+        <div class="page-header">
+            <h1>🛠️ Administration Panel</h1>
+            <p>Manage faculty, publish timetables, and oversee the scheduling system for the entire department.</p>
+        </div>
 
-<h2>Add Subject</h2>
+        <div class="page-content">
+            <div style="max-width:1200px;margin:0 auto;">
 
-<input type="text" placeholder="Subject Name">
-<button>Add</button>
+                <!-- STAT CARDS -->
+                <div class="admin-stats">
+                    <div class="admin-stat" style="animation-delay:0s">
+                        <div class="admin-stat-icon"
+                            style="background:linear-gradient(135deg,rgba(79,110,247,0.15),rgba(79,110,247,0.05))">👩‍🏫
+                        </div>
+                        <div>
+                            <div class="admin-stat-num" style="color:var(--accent)">10</div>
+                            <div class="admin-stat-label">Active Faculty</div>
+                        </div>
+                    </div>
+                    <div class="admin-stat" style="animation-delay:0.1s">
+                        <div class="admin-stat-icon"
+                            style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.05))">📋
+                        </div>
+                        <div>
+                            <div class="admin-stat-num" style="color:var(--accent4)">18</div>
+                            <div class="admin-stat-label">Slots Assigned</div>
+                        </div>
+                    </div>
+                    <div class="admin-stat" style="animation-delay:0.2s">
+                        <div class="admin-stat-icon"
+                            style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.05))">🎓
+                        </div>
+                        <div>
+                            <div class="admin-stat-num" style="color:var(--accent5)">860</div>
+                            <div class="admin-stat-label">Students</div>
+                        </div>
+                    </div>
+                    <div class="admin-stat" style="animation-delay:0.3s">
+                        <div class="admin-stat-icon"
+                            style="background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(124,58,237,0.05))">🏫
+                        </div>
+                        <div>
+                            <div class="admin-stat-num" style="color:var(--accent2)">12</div>
+                            <div class="admin-stat-label">Classrooms</div>
+                        </div>
+                    </div>
+                    <div class="admin-stat" style="animation-delay:0.4s">
+                        <div class="admin-stat-icon"
+                            style="background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(239,68,68,0.04))">⚠️
+                        </div>
+                        <div>
+                            <div class="admin-stat-num" style="color:var(--accent6)">2</div>
+                            <div class="admin-stat-label">Conflicts</div>
+                        </div>
+                    </div>
+                </div>
 
-</div>
+                <!-- TIMETABLE OVERVIEW & NOTIFICATIONS -->
+                <div class="admin-grid-2col">
 
-<div class="admin-box">
+                    <!-- Mini timetable -->
+                    <div class="admin-card">
+                        <div class="admin-card-title">
+                            📆 Timetable Overview
+                            <button class="btn btn-primary btn-sm" onclick="location.href='student.html'">Open Full
+                                →</button>
+                        </div>
+                        <div class="mini-cal" id="mini-cal"><!-- JS --></div>
+                    </div>
 
-<h2>Add Teacher</h2>
+                    <!-- Notifications -->
+                    <div class="admin-card" style="animation-delay:0.1s">
+                        <div class="admin-card-title">🔔 Recent Activity</div>
+                        <div>
+                            <div class="notif-item">
+                                <div class="notif-dot" style="background:var(--accent4)"></div>
+                                <div>
+                                    <div class="notif-text"><strong>Prof. Arun</strong> assigned to Monday 09:00
+                                        (Mathematics)</div>
+                                    <div class="notif-time">2 minutes ago</div>
+                                </div>
+                            </div>
+                            <div class="notif-item">
+                                <div class="notif-dot" style="background:var(--accent)"></div>
+                                <div>
+                                    <div class="notif-text"><strong>Prof. Akash</strong> updated availability for
+                                        Wednesday</div>
+                                    <div class="notif-time">15 minutes ago</div>
+                                </div>
+                            </div>
+                            <div class="notif-item">
+                                <div class="notif-dot" style="background:var(--accent6)"></div>
+                                <div>
+                                    <div class="notif-text">⚠️ Conflict detected: <strong>Prof. Kumar</strong>
+                                        double-booked on Thursday</div>
+                                    <div class="notif-time">32 minutes ago</div>
+                                </div>
+                            </div>
+                            <div class="notif-item">
+                                <div class="notif-dot" style="background:var(--accent5)"></div>
+                                <div>
+                                    <div class="notif-text"><strong>Prof. Meena</strong> requested Friday 14:00 slot
+                                        change</div>
+                                    <div class="notif-time">1 hour ago</div>
+                                </div>
+                            </div>
+                            <div class="notif-item">
+                                <div class="notif-dot" style="background:var(--accent4)"></div>
+                                <div>
+                                    <div class="notif-text">Timetable published for Semester II — <strong>860 students
+                                            notified</strong></div>
+                                    <div class="notif-time">Yesterday</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-<input type="text" placeholder="Teacher Name">
+                <!-- FACULTY TABLE -->
+                <div class="admin-table-wrap" style="margin-bottom:28px;">
+                    <div
+                        style="padding:20px 20px 0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                        <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;">👥 Faculty Roster
+                        </div>
+                        <button class="btn btn-primary btn-sm">+ Add Faculty</button>
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>FACULTY</th>
+                                <th>SUBJECT</th>
+                                <th>DEPT.</th>
+                                <th>WEEKLY HRS</th>
+                                <th>STATUS</th>
+                                <th>ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody id="faculty-tbody"><!-- JS --></tbody>
+                    </table>
+                </div>
 
-<select>
-<option>Math</option>
-<option>Physics</option>
-<option>Computer Science</option>
-<option>Chemistry</option>
-</select>
+                <!-- FACULTY LOAD BAR -->
+                <div class="admin-card" style="margin-bottom:28px;">
+                    <div class="admin-card-title">📊 Faculty Workload Distribution</div>
+                    <div id="workload-bars"></div>
+                </div>
 
-<button>Add Teacher</button>
+                <!-- ACTIONS -->
+                <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:20px;">
+                    <button class="btn btn-secondary" onclick="location.href='index.html'">← Back to Home</button>
+                    <button class="btn btn-primary" id="publish-btn">🚀 Publish Timetable</button>
+                    <button class="btn btn-success" id="export-btn">📥 Export PDF</button>
+                </div>
 
-</div>
+            </div>
+        </div>
+    </div>
 
+    <div id="toast-container"></div>
+
+    <script>
+        // Theme
+        const themeBtn = document.getElementById('theme-toggle');
+        const saved = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', saved);
+        themeBtn.addEventListener('click', () => {
+            const c = document.documentElement.getAttribute('data-theme');
+            const n = c === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', n);
+            localStorage.setItem('theme', n);
+        });
+
+        const FACULTY = [
+            { initials: 'A', name: 'Prof. Arun', subj: 'Mathematics', dept: 'Science', hrs: 16, max: 20, status: 'active', color: '#4f6ef7', cls: 'avatar-math' },
+            { initials: 'R', name: 'Prof. Ravi', subj: 'Mathematics', dept: 'Science', hrs: 12, max: 20, status: 'active', color: '#4f6ef7', cls: 'avatar-math' },
+            { initials: 'Me', name: 'Prof. Meena', subj: 'Chemistry', dept: 'Science', hrs: 14, max: 20, status: 'pending', color: '#10b981', cls: 'avatar-chem' },
+            { initials: 'K', name: 'Prof. Kumar', subj: 'Physics', dept: 'Science', hrs: 20, max: 20, status: 'active', color: '#7c3aed', cls: 'avatar-physics' },
+            { initials: 'D', name: 'Prof. Deepa', subj: 'Physics', dept: 'Science', hrs: 10, max: 20, status: 'active', color: '#7c3aed', cls: 'avatar-physics' },
+            { initials: 'Ak', name: 'Prof. Akash', subj: 'Computer Sc.', dept: 'CS', hrs: 18, max: 20, status: 'active', color: '#06b6d4', cls: 'avatar-cs' },
+            { initials: 'S', name: 'Prof. Sita', subj: 'English', dept: 'Hum.', hrs: 8, max: 20, status: 'active', color: '#f59e0b', cls: 'avatar-english' },
+            { initials: 'Rj', name: 'Prof. Raj', subj: 'Mathematics', dept: 'Science', hrs: 0, max: 20, status: 'off', color: '#4f6ef7', cls: 'avatar-math' },
+            { initials: 'P', name: 'Prof. Priya', subj: 'Computer Sc.', dept: 'CS', hrs: 14, max: 20, status: 'active', color: '#06b6d4', cls: 'avatar-cs' },
+            { initials: 'N', name: 'Prof. Nair', subj: 'Chemistry', dept: 'Science', hrs: 6, max: 20, status: 'pending', color: '#10b981', cls: 'avatar-chem' },
+        ];
+
+        // Faculty table
+        const tbody = document.getElementById('faculty-tbody');
+        tbody.innerHTML = FACULTY.map(f => `
+  <tr>
+    <td>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="fa-mini ${f.cls}">${f.initials}</div>
+        <div>
+          <div style="font-weight:700;font-size:0.85rem">${f.name}</div>
+          <div style="font-size:0.72rem;color:var(--text2)">ID: FA-${Math.floor(1000 + Math.random() * 9000)}</div>
+        </div>
+      </div>
+    </td>
+    <td><span class="chip">${f.subj}</span></td>
+    <td style="color:var(--text2);font-size:0.82rem">${f.dept}</td>
+    <td style="font-weight:700">${f.hrs} <span style="font-size:0.72rem;color:var(--text2)">/ ${f.max} hrs</span></td>
+    <td><span class="status-badge ${f.status}">${f.status === 'active' ? '● Active' : f.status === 'pending' ? '● Pending' : '● Off'}</span></td>
+    <td>
+      <button class="btn btn-secondary btn-sm" style="margin:0">Edit</button>
+    </td>
+  </tr>
+`).join('');
+
+        // Workload bars
+        const wb = document.getElementById('workload-bars');
+        wb.innerHTML = FACULTY.map(f => `
+  <div class="faculty-row">
+    <div class="fa-mini ${f.cls}">${f.initials}</div>
+    <div class="fa-info">
+      <div class="fa-name">${f.name}</div>
+      <div class="fa-sub">${f.subj}</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" style="width:${(f.hrs / f.max) * 100}%; background:${f.hrs >= 18 ? '#ef4444' : f.hrs >= 12 ? '#f59e0b' : '#10b981'}"></div>
+      </div>
+    </div>
+    <div class="fa-hours">${f.hrs}/${f.max}h</div>
+  </div>
+`).join('');
+
+        // Mini calendar
+        const MINI_TEACHERS = [
+            ['Prof. Arun', 'Prof. Akash', 'Prof. Arun', 'Prof. Kumar', 'Prof. Meena'],
+            ['Prof. Kumar', 'Prof. Ravi', 'Prof. Akash', 'Prof. Sita', 'Prof. Arun'],
+            ['Prof. Meena', 'Prof. Deepa', 'Prof. Sita', 'Prof. Akash', 'Prof. Kumar'],
+            ['Prof. Sita', '', 'Prof. Ravi', '', 'Prof. Priya'],
+            ['', 'Prof. Nair', '', 'Prof. Deepa', 'Prof. Akash'],
+        ];
+        const COLORS = {
+            'Prof. Arun': '#4f6ef7', 'Prof. Ravi': '#4f6ef7', 'Prof. Meena': '#10b981', 'Prof. Kumar': '#7c3aed',
+            'Prof. Deepa': '#7c3aed', 'Prof. Akash': '#06b6d4', 'Prof. Sita': '#f59e0b', 'Prof. Priya': '#06b6d4',
+            'Prof. Nair': '#10b981', '': 'transparent'
+        };
+        const TIMES = ['09:00', '10:00', '11:00', '12:00', '13:00'];
+        const DAYS_S = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+        const miniCal = document.getElementById('mini-cal');
+        miniCal.innerHTML = DAYS_S.map(d => `<div class="mini-cal-head">${d}</div>`).join('');
+        MINI_TEACHERS.forEach((row, ri) => {
+            miniCal.innerHTML += `<div class="mini-cal-time">${TIMES[ri]}</div>`;
+            row.forEach(name => {
+                const bg = COLORS[name] || 'transparent';
+                const initials = name ? name.split(' ').map(w => w[0]).join('').slice(0, 3) : '';
+                miniCal.innerHTML += `<div class="mini-cell ${name ? 'filled' : 'empty'}" style="${name ? `background:${bg};` : ''}">${initials || '—'}</div>`;
+            });
+        });
+
+        // Buttons
+        function showToast(msg, type = 'info') {
+            const tc = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = `toast toast-${type}`;
+            t.innerHTML = `<span class="toast-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span><span>${msg}</span>`;
+            tc.appendChild(t);
+            setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 350); }, 2800);
+        }
+
+        document.getElementById('publish-btn').addEventListener('click', () => showToast('🚀 Timetable published to all 860 students!', 'success'));
+        document.getElementById('export-btn').addEventListener('click', () => showToast('📥 PDF export started...', 'info'));
+    </script>
 </body>
+
 </html>

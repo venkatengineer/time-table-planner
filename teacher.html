@@ -1,44 +1,333 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="light">
+
 <head>
-<title>Teacher Dashboard</title>
-<link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Portal — EduSchedule</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .avail-grid-wrap {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--neu-out);
+            padding: 24px;
+            margin-bottom: 28px;
+            animation: fadeInUp 0.5s 0.1s ease both;
+        }
+
+        .avail-grid-title {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avail-grid {
+            display: grid;
+            grid-template-columns: 100px repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .upcoming-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--neu-out);
+            padding: 24px;
+            animation: fadeInUp 0.5s 0.2s ease both;
+        }
+
+        .session-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: var(--transition-fast);
+        }
+
+        [data-theme="dark"] .session-item {
+            border-bottom-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .session-item:last-child {
+            border-bottom: none;
+        }
+
+        .session-item:hover {
+            transform: translateX(4px);
+        }
+
+        .session-time-block {
+            min-width: 90px;
+            text-align: center;
+            background: var(--bg);
+            box-shadow: var(--neu-sm);
+            border-radius: 10px;
+            padding: 8px 12px;
+        }
+
+        .session-day {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .session-time {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 2px;
+        }
+
+        .session-info {
+            flex: 1;
+        }
+
+        .session-subject {
+            font-weight: 700;
+            font-size: 0.92rem;
+        }
+
+        .session-room {
+            font-size: 0.75rem;
+            color: var(--text2);
+            margin-top: 2px;
+        }
+
+        .session-color {
+            width: 4px;
+            border-radius: 4px;
+            align-self: stretch;
+            min-height: 40px;
+        }
+
+        .schedule-select {
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--bg);
+            box-shadow: var(--neu-in);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
+    <div class="page-wrapper">
 
-<h1>Teacher Availability</h1>
+        <nav class="navbar">
+            <a class="nav-brand" href="index.html">
+                <div class="nav-logo">📅</div>
+                <div>
+                    <div class="nav-title">EduSchedule</div>
+                    <div class="nav-subtitle">Faculty Portal</div>
+                </div>
+            </a>
+            <div class="nav-actions">
+                <a href="index.html" class="nav-back">← Home</a>
+                <button class="theme-switch" id="theme-toggle">🌓</button>
+            </div>
+        </nav>
 
-<form>
+        <div class="page-header">
+            <h1>👩‍🏫 Faculty Dashboard</h1>
+            <p>Mark your weekly availability and view your assigned classes for the semester.</p>
+        </div>
 
-<label>Subject</label>
-<select>
-<option>Math</option>
-<option>Physics</option>
-<option>Computer Science</option>
-<option>Chemistry</option>
-<option>English</option>
-</select>
+        <div class="page-content">
+            <div style="max-width: 1100px; margin: 0 auto;">
 
-<br><br>
+                <!-- PROFILE + STATS -->
+                <div class="profile-card">
+                    <div class="profile-avatar">AK</div>
+                    <div class="profile-info" style="flex:1;">
+                        <h2>Prof. Akash Sharma</h2>
+                        <div style="font-size:0.85rem; color:var(--text2);">
+                            Department of Computer Science &nbsp;·&nbsp; Associate Professor &nbsp;·&nbsp; Employee ID:
+                            CS-2021-047
+                        </div>
+                        <div class="profile-tags">
+                            <span class="tag">💻 Computer Science</span>
+                            <span class="tag">🔗 Data Structures</span>
+                            <span class="tag">🧠 Algorithms</span>
+                            <span class="tag">📊 15 yrs exp.</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:24px; flex-wrap:wrap;">
+                        <div style="text-align:center;">
+                            <div style="font-size:1.6rem; font-weight:800; color:var(--accent);">12</div>
+                            <div style="font-size:0.72rem; color:var(--text2);">Classes/week</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:1.6rem; font-weight:800; color:var(--accent4);">3</div>
+                            <div style="font-size:0.72rem; color:var(--text2);">Subjects</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:1.6rem; font-weight:800; color:var(--accent5);">96</div>
+                            <div style="font-size:0.72rem; color:var(--text2);">Students</div>
+                        </div>
+                    </div>
+                </div>
 
-<label>Available Time Slots</label>
+                <!-- AVAILABILITY GRID -->
+                <div class="avail-grid-wrap">
+                    <div class="avail-grid-title">
+                        🗓️ Weekly Availability
+                        <span style="font-size:0.75rem; color:var(--text2); font-weight:400; margin-left:8px;">Click
+                            cells to toggle availability</span>
+                        <div style="margin-left:auto; display:flex; gap:8px; font-size:0.75rem; flex-wrap:wrap;">
+                            <span style="display:flex;align-items:center;gap:5px;"><span
+                                    style="width:12px;height:12px;border-radius:3px;background:linear-gradient(135deg,#10b981,#059669);display:inline-block;"></span>Free</span>
+                            <span style="display:flex;align-items:center;gap:5px;"><span
+                                    style="width:12px;height:12px;border-radius:3px;background:linear-gradient(135deg,#4f6ef7,#7c3aed);display:inline-block;"></span>Assigned</span>
+                            <span style="display:flex;align-items:center;gap:5px;"><span
+                                    style="width:12px;height:12px;border-radius:3px;background:linear-gradient(135deg,#ef4444,#dc2626);display:inline-block;"></span>Busy</span>
+                        </div>
+                    </div>
+                    <div class="avail-grid" id="avail-grid">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
 
-<div class="slots">
+                <!-- UPCOMING SESSIONS -->
+                <div class="upcoming-card">
+                    <div
+                        style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+                        <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;">📋 This Week's
+                            Sessions</div>
+                        <select class="schedule-select" id="week-select">
+                            <option>Week of 3–7 Mar 2026</option>
+                            <option>Week of 10–14 Mar 2026</option>
+                            <option>Week of 17–21 Mar 2026</option>
+                        </select>
+                    </div>
+                    <div id="sessions-list"></div>
+                </div>
 
-<label><input type="checkbox"> 9:00 - 10:00</label>
-<label><input type="checkbox"> 10:00 - 11:00</label>
-<label><input type="checkbox"> 11:00 - 12:00</label>
-<label><input type="checkbox"> 1:00 - 2:00</label>
-<label><input type="checkbox"> 2:00 - 3:00</label>
+                <div style="margin-top:24px; display:flex; justify-content:center; gap:12px;">
+                    <button class="btn btn-secondary" onclick="location.href='index.html'">← Back to Home</button>
+                    <button class="btn btn-success" id="save-btn">💾 Save Availability</button>
+                </div>
 
-</div>
+            </div>
+        </div>
+    </div>
 
-<br>
+    <div id="toast-container"></div>
 
-<button class="submit">Save Availability</button>
+    <script>
+        // Theme
+        const themeBtn = document.getElementById('theme-toggle');
+        const saved = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', saved);
+        themeBtn.addEventListener('click', () => {
+            const c = document.documentElement.getAttribute('data-theme');
+            const n = c === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', n);
+            localStorage.setItem('theme', n);
+        });
 
-</form>
+        const DAYS = ['Mon 3', 'Tue 4', 'Wed 5', 'Thu 6', 'Fri 7'];
+        const SLOTS = ['09:00–10:00', '10:00–11:00', '11:00–12:00', '12:00–13:00', '13:00–14:00'];
+        const DAY_FULL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
+        // Predefined: [row][col] => 'available' | 'busy' | 'assigned'
+        const PREDEFINED_AVAIL = [
+            ['assigned', 'available', 'assigned', 'busy', 'assigned'],
+            ['busy', 'available', 'assigned', 'available', 'busy'],
+            ['available', 'assigned', 'available', 'assigned', 'available'],
+            ['available', 'busy', 'available', 'busy', 'available'],
+            ['assigned', 'available', 'busy', 'available', 'assigned'],
+        ];
+
+        let cellState = PREDEFINED_AVAIL.map(r => [...r]);
+
+        const SESSIONS = [
+            { day: 'Mon', time: '09:00–10:00', subject: 'Data Structures', room: 'Room 201, CS Block', color: '#4f6ef7' },
+            { day: 'Mon', time: '13:00–14:00', subject: 'Algorithms Lab', room: 'Lab 3, CS Block', color: '#06b6d4' },
+            { day: 'Wed', time: '10:00–11:00', subject: 'Computer Networks', room: 'Room 205, CS Block', color: '#7c3aed' },
+            { day: 'Wed', time: '13:00–14:00', subject: 'Data Structures', room: 'Room 201, CS Block', color: '#4f6ef7' },
+            { day: 'Fri', time: '09:00–10:00', subject: 'Algorithms', room: 'Room 203, CS Block', color: '#10b981' },
+            { day: 'Fri', time: '13:00–14:00', subject: 'Computer Networks Lab', room: 'Lab 2, CS Block', color: '#7c3aed' },
+        ];
+
+        function buildAvailGrid() {
+            const grid = document.getElementById('avail-grid');
+            grid.innerHTML = '';
+
+            // Headers
+            grid.innerHTML += '<div class="avail-header"></div>';
+            DAYS.forEach(d => { grid.innerHTML += `<div class="avail-header">${d}</div>`; });
+
+            SLOTS.forEach((slot, ri) => {
+                grid.innerHTML += `<div class="avail-time">${slot.split('–')[0]}</div>`;
+                DAYS.forEach((_, ci) => {
+                    const state = cellState[ri][ci];
+                    const cell = document.createElement('div');
+                    cell.className = `avail-cell ${state}`;
+                    cell.dataset.ri = ri;
+                    cell.dataset.ci = ci;
+                    cell.textContent = state === 'assigned' ? '📌 Class' : state === 'available' ? '✓ Free' : '✗ Busy';
+                    if (state !== 'assigned') {
+                        cell.style.cursor = 'pointer';
+                        cell.addEventListener('click', toggleCell);
+                    }
+                    grid.appendChild(cell);
+                });
+            });
+        }
+
+        function toggleCell(e) {
+            const { ri, ci } = e.currentTarget.dataset;
+            const cur = cellState[ri][ci];
+            cellState[ri][ci] = cur === 'available' ? 'busy' : 'available';
+            buildAvailGrid();
+        }
+
+        function buildSessions() {
+            const list = document.getElementById('sessions-list');
+            list.innerHTML = SESSIONS.map(s => `
+    <div class="session-item">
+      <div class="session-color" style="background:${s.color}"></div>
+      <div class="session-time-block">
+        <div class="session-day">${s.day}</div>
+        <div class="session-time">${s.time}</div>
+      </div>
+      <div class="session-info">
+        <div class="session-subject">${s.subject}</div>
+        <div class="session-room">🏫 ${s.room}</div>
+      </div>
+      <span class="status-badge active">● Active</span>
+    </div>
+  `).join('');
+        }
+
+        document.getElementById('save-btn').addEventListener('click', () => {
+            showToast('💾 Availability saved successfully!', 'success');
+        });
+
+        function showToast(msg, type = 'info') {
+            const tc = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = `toast toast-${type}`;
+            t.innerHTML = `<span class="toast-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span><span>${msg}</span>`;
+            tc.appendChild(t);
+            setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 350); }, 2800);
+        }
+
+        buildAvailGrid();
+        buildSessions();
+    </script>
 </body>
+
 </html>
