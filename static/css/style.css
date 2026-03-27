@@ -1,0 +1,127 @@
+/* -------- GLOBAL -------- */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+
+    /* Soft gradient background */
+    background: linear-gradient(135deg, #dbeafe, #f0f9ff);
+    min-height: 100vh;
+    text-align: center;
+}
+
+
+/* -------- HEADINGS -------- */
+h1 {
+    margin-top: 40px;
+    font-size: 32px;
+    color: #1e293b;
+}
+
+h2 {
+    color: #334155;
+}
+
+
+/* -------- GLASS CARD (Glassmorphism) -------- */
+form, table, .card {
+    margin: 20px auto;
+    padding: 20px;
+    width: 60%;
+
+    /* Glass effect */
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(12px);
+
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
+    /* Soft neumorphism shadow */
+    box-shadow: 
+        8px 8px 15px rgba(0, 0, 0, 0.1),
+        -8px -8px 15px rgba(255, 255, 255, 0.6);
+}
+
+
+/* -------- INPUTS -------- */
+input, select {
+    padding: 10px;
+    margin: 8px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+
+    /* Neumorphism effect */
+    background: #e0e5ec;
+    box-shadow: 
+        inset 3px 3px 6px rgba(0,0,0,0.1),
+        inset -3px -3px 6px rgba(255,255,255,0.7);
+}
+
+
+/* -------- BUTTONS -------- */
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+
+    background: #e0e5ec;
+
+    /* Neumorphism */
+    box-shadow: 
+        5px 5px 10px rgba(0,0,0,0.2),
+        -5px -5px 10px rgba(255,255,255,0.7);
+
+    transition: all 0.2s ease;
+}
+
+/* Hover */
+button:hover {
+    transform: translateY(-2px);
+}
+
+/* Click effect */
+button:active {
+    box-shadow: 
+        inset 3px 3px 6px rgba(0,0,0,0.2),
+        inset -3px -3px 6px rgba(255,255,255,0.7);
+}
+
+
+/* -------- TABLE -------- */
+table {
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px;
+    border-radius: 10px;
+}
+
+th {
+    background: rgba(255,255,255,0.6);
+    color: #0f172a;
+}
+
+td {
+    background: rgba(255,255,255,0.3);
+}
+
+
+/* -------- LINKS -------- */
+a {
+    text-decoration: none;
+}
+
+
+/* -------- SCROLLBAR (optional cool touch) -------- */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 10px;
+}

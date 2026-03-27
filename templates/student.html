@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Timetable</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+        }
+
+        table {
+            margin: auto;
+            border-collapse: collapse;
+            width: 80%;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🎓 Student Timetable</h1>
+
+    <a href="/">
+        <button>⬅ Back</button>
+    </a>
+
+    <br><br>
+
+    <table>
+        <tr>
+            <th>Class</th>
+            <th>Subject</th>
+            <th>Teacher</th>
+            <th>Time Slot</th>
+        </tr>
+
+        {% for row in timetable %}
+        <tr>
+            <td>{{ row.class_id }}</td>
+            <td>{{ row.subject_id }}</td>
+            <td>{{ row.teacher_id }}</td>
+            <td>{{ row.timeslot_id }}</td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+    <script src="/static/js/script.js"></script>
+
+</body>
+</html>

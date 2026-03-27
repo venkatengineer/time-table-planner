@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Panel</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+        }
+
+        form {
+            margin: 20px;
+        }
+
+        table {
+            margin: auto;
+            border-collapse: collapse;
+            width: 70%;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>👨‍🏫 Teacher Panel</h1>
+
+    <a href="/">
+        <button>⬅ Back</button>
+    </a>
+
+    <hr>
+
+    <!-- ADD AVAILABILITY -->
+    <h2>Add Availability</h2>
+
+    <form action="/add-availability" method="post">
+        <label>Teacher ID:</label>
+        <input type="number" name="teacher_id" required>
+
+        <br><br>
+
+        <label>Time Slot ID:</label>
+        <input type="number" name="timeslot_id" required>
+
+        <br><br>
+
+        <button type="submit">Add Availability</button>
+    </form>
+
+    <hr>
+
+    <!-- VIEW AVAILABILITY -->
+    <h2>Your Availability</h2>
+
+    <table>
+        <tr>
+            <th>Teacher ID</th>
+            <th>Time Slot ID</th>
+        </tr>
+
+        {% if availability %}
+            {% for row in availability %}
+            <tr>
+                <td>{{ row.teacher_id }}</td>
+                <td>{{ row.timeslot_id }}</td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="2">No availability added yet</td>
+            </tr>
+        {% endif %}
+
+    </table>
+
+    <script src="/static/js/script.js"></script>
+
+</body>
+</html>
