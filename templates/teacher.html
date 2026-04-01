@@ -1,91 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Teacher Panel</title>
-
-    <link rel="stylesheet" href="/static/css/style.css">
-
-    <style>
-        body {
-            font-family: Arial;
-            text-align: center;
-        }
-
-        form {
-            margin: 20px;
-        }
-
-        table {
-            margin: auto;
-            border-collapse: collapse;
-            width: 70%;
-        }
-
-        th, td {
-            border: 1px solid black;
-            padding: 10px;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Panel — TimeTable Pro</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .teacher-layout { display: grid; grid-template-columns: 300px 1fr; gap: 28px; }
+    @media(max-width:900px){ .teacher-layout{grid-template-columns:1fr;} }
+    .day-section { margin-bottom: 28px; }
+    .day-label {
+      font-size: 13px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .day-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(to right, var(--shadow-dark), transparent);
+    }
+    .avail-entry {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: var(--bg);
+      box-shadow: 3px 3px 7px var(--shadow-dark), -3px -3px 7px var(--shadow-light);
+      margin-bottom: 10px;
+      animation: fadeSlideIn 0.3s ease forwards;
+    }
+    .avail-time {
+      font-weight: 700; font-size: 15px; color: var(--text-dark);
+    }
+    .avail-sub {
+      font-size: 12px; color: var(--text-light); margin-top: 2px;
+    }
+    .slot-count-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 3px 3px 8px rgba(108,99,255,0.35);
+    }
+    .section-notice {
+      padding: 16px 20px;
+      border-radius: 14px;
+      background: rgba(108,99,255,0.06);
+      border-left: 3px solid var(--primary);
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+  </style>
 </head>
 <body>
-
-    <h1>👨‍🏫 Teacher Panel</h1>
-
-    <a href="/">
-        <button>⬅ Back</button>
+  <nav class="navbar">
+    <a href="/" class="navbar-brand">
+      <div class="brand-icon">📅</div>
+      <span class="brand-text">TimeTable Pro</span>
     </a>
+    <div class="navbar-links">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/admin" class="nav-link">Admin</a>
+      <a href="/teacher" class="nav-link active">Teacher</a>
+      <a href="/student" class="nav-link">Student</a>
+    </div>
+  </nav>
 
-    <hr>
+  <div class="page-wrapper">
+    <div class="section-title">👨‍🏫 Teacher Panel</div>
+    <div class="section-subtitle">Mark your available time slots for the week</div>
 
-    <!-- ADD AVAILABILITY -->
-    <h2>Add Availability</h2>
+    <div class="teacher-layout">
+      <!-- LEFT: Select Teacher + Save Availability -->
+      <div>
+        <div class="card" style="margin-bottom:22px;">
+          <div class="card-header">
+            <div class="card-title">👤 Select Teacher</div>
+          </div>
+          <form action="/add-availability" method="post" id="availForm">
+            <div class="form-group">
+              <label class="form-label">Teacher</label>
+              <select name="teacher_id" id="teacherSelect" class="form-control" required>
+                {% for teacher in teachers %}
+                  <option value="{{ teacher.id }}">{{ teacher.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <!-- Hidden field holding selected slot ids as comma-separated -->
+            <input type="hidden" name="timeslot_id" id="selectedSlotsInput" required>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">💾 Save Availability</button>
+            </div>
+          </form>
+        </div>
 
-    <form action="/add-availability" method="post">
-        <label>Teacher ID:</label>
-        <input type="number" name="teacher_id" required>
-
-        <br><br>
-
-        <label>Time Slot ID:</label>
-        <input type="number" name="timeslot_id" required>
-
-        <br><br>
-
-        <button type="submit">Add Availability</button>
-    </form>
-
-    <hr>
-
-    <!-- VIEW AVAILABILITY -->
-    <h2>Your Availability</h2>
-
-    <table>
-        <tr>
-            <th>Teacher ID</th>
-            <th>Time Slot ID</th>
-        </tr>
-
-        {% if availability %}
-            {% for row in availability %}
-            <tr>
-                <td>{{ row.teacher_id }}</td>
-                <td>{{ row.timeslot_id }}</td>
-            </tr>
+        <!-- Current Availability -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">✅ My Availability</div>
+            <div class="slot-count-badge" id="selectedCount">0 slots</div>
+          </div>
+          {% if availability %}
+            {% for avail in availability %}
+            <div class="avail-entry">
+              <div style="width:36px;height:36px;border-radius:9px;background:rgba(108,99,255,0.12);display:flex;align-items:center;justify-content:center;font-size:16px;">✓</div>
+              <div>
+                <div class="avail-time">Slot #{{ avail.timeslot_id }}</div>
+                <div class="avail-sub">Teacher ID {{ avail.teacher_id }}</div>
+              </div>
+            </div>
             {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan="2">No availability added yet</td>
-            </tr>
+          {% else %}
+            <div style="text-align:center;padding:30px;color:var(--text-light);font-size:14px;">
+              No availability saved yet.<br>Select slots on the right →
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Slot picker calendar -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📅 Pick Your Free Slots</div>
+          <span class="badge badge-theory">Click to toggle</span>
+        </div>
+        <div class="section-notice">
+          Click on any time slot below to mark yourself as <strong>available</strong>. Selected slots are highlighted in purple. Then click <em>Save Availability</em>.
+        </div>
+
+        {% set days = ['Monday','Tuesday','Wednesday','Thursday','Friday'] %}
+        {% for day in days %}
+          {% set day_slots = timeslots | selectattr('day', 'equalto', day) | list %}
+          {% if day_slots %}
+          <div class="day-section">
+            <div class="day-label">{{ day }}</div>
+            <div class="slot-grid">
+              {% for slot in day_slots %}
+                {% if slot.is_break %}
+                  <div class="slot-btn break-slot" title="Break">
+                    ☕ Break<br>
+                    <small>{{ slot.start_time.strftime('%H:%M') if slot.start_time else '' }}</small>
+                  </div>
+                {% else %}
+                  <button 
+                    type="button"
+                    class="slot-btn"
+                    data-slot-id="{{ slot.id }}"
+                    id="slot-{{ slot.id }}"
+                  >
+                    {{ slot.start_time.strftime('%H:%M') if slot.start_time else slot.id }}<br>
+                    <small style="font-weight:400;opacity:.7">to {{ slot.end_time.strftime('%H:%M') if slot.end_time else '' }}</small>
+                  </button>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+
+        {% if not timeslots %}
+          <div style="text-align:center;padding:40px;color:var(--text-light);">
+            No time slots defined yet.<br><a href="/admin" style="color:var(--primary);">Go to Admin panel</a> to add slots.
+          </div>
         {% endif %}
+      </div>
+    </div>
+  </div>
 
-    </table>
+  <script src="/static/js/script.js"></script>
+  <script>
+    // Update save button form to handle multi-select properly
+    // We override the default save: submit one by one
+    const availForm = document.getElementById('availForm');
+    const selectedSlotsInput = document.getElementById('selectedSlotsInput');
+    const selectedCountEl = document.getElementById('selectedCount');
+    const selectedSlots = new Set();
 
-    <script src="/static/js/script.js"></script>
+    document.querySelectorAll('.slot-btn:not(.break-slot)').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const slotId = btn.dataset.slotId;
+        if (selectedSlots.has(slotId)) {
+          selectedSlots.delete(slotId);
+          btn.classList.remove('selected');
+        } else {
+          selectedSlots.add(slotId);
+          btn.classList.add('selected');
+        }
+        selectedSlotsInput.value = [...selectedSlots].join(',');
+        const n = selectedSlots.size;
+        selectedCountEl.textContent = `${n} slot${n !== 1 ? 's' : ''}`;
+      });
+    });
 
+    // On form submit, post each slot_id separately as the backend expects one at a time
+    availForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (selectedSlots.size === 0) {
+        showToast('Please select at least one slot', 'error');
+        return;
+      }
+      const teacherId = document.getElementById('teacherSelect').value;
+      let success = 0;
+
+      for (const slotId of selectedSlots) {
+        const body = new URLSearchParams({ teacher_id: teacherId, timeslot_id: slotId });
+        try {
+          await fetch('/add-availability', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body,
+            redirect: 'manual'
+          });
+          success++;
+        } catch (err) { /* ignore */ }
+      }
+
+      showToast(`✓ Saved ${success} slot(s) successfully!`, 'success');
+      setTimeout(() => location.reload(), 1200);
+    });
+  </script>
 </body>
 </html>

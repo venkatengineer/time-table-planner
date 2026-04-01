@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 # 🔹 Change this if you switch to MySQL later
-DATABASE_URL = "sqlite:///./timetable.db"
+DATABASE_URL = "sqlite:///./timetable2.db"
 
 # Create engine
 engine = create_engine(

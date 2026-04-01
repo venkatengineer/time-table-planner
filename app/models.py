@@ -20,7 +20,8 @@ class Subject(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    weekly_hours = Column(Integer, nullable=False)
+    theory_hours = Column(Integer, default=0, nullable=False)
+    lab_hours = Column(Integer, default=0, nullable=False)
 
 
 # ---------------- CLASSES ----------------
@@ -29,19 +30,16 @@ class Class(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    student_count = Column(Integer)
-
-
-# ---------------- TEACHER ASSIGNMENT ----------------
-class TeacherAssignment(Base):
-    __tablename__ = "teacher_assignments"
-
-    id = Column(Integer, primary_key=True, index=True)
-
     teacher_id = Column(Integer, ForeignKey("users.id"))
     subject_id = Column(Integer, ForeignKey("subjects.id"))
-    class_id = Column(Integer, ForeignKey("classes.id"))
 
+# ---------------- STUDENT ENROLLMENT ----------------
+class StudentEnrollment(Base):
+    __tablename__ = "student_enrollments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("users.id"))
+    class_id = Column(Integer, ForeignKey("classes.id"))
 
 # ---------------- TIME SLOTS ----------------
 class TimeSlot(Base):
@@ -54,7 +52,6 @@ class TimeSlot(Base):
     end_time = Column(Time, nullable=False)
     is_break = Column(Boolean, default=False)
 
-
 # ---------------- TIMETABLE ----------------
 class Timetable(Base):
     __tablename__ = "timetable"
@@ -62,13 +59,10 @@ class Timetable(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     class_id = Column(Integer, ForeignKey("classes.id"))
-    subject_id = Column(Integer, ForeignKey("subjects.id"))
-    teacher_id = Column(Integer, ForeignKey("users.id"))
     timeslot_id = Column(Integer, ForeignKey("timeslots.id"))
 
     # 🔥 Prevent clashes
     __table_args__ = (
-        UniqueConstraint("teacher_id", "timeslot_id", name="no_teacher_overlap"),
         UniqueConstraint("class_id", "timeslot_id", name="no_class_overlap"),
     )
 

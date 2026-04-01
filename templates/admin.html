@@ -1,161 +1,379 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin Panel</title>
-
-    <link rel="stylesheet" href="/static/css/style.css">
-
-    <style>
-        body {
-            font-family: Arial;
-            text-align: center;
-        }
-
-        form {
-            margin: 20px;
-            padding: 15px;
-            border: 1px solid #ccc;
-            width: 50%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        input, select, button {
-            margin: 5px;
-            padding: 8px;
-        }
-
-        h2 {
-            margin-top: 40px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — TimeTable Pro</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+    @media(max-width:900px){ .main-layout{grid-template-columns:1fr;} }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media(max-width:580px){ .form-row{grid-template-columns:1fr;} }
+    .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 4px; }
+    .class-list-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: var(--bg);
+      box-shadow: 3px 3px 7px var(--shadow-dark), -3px -3px 7px var(--shadow-light);
+      margin-bottom: 10px;
+      animation: fadeSlideIn 0.3s ease forwards;
+    }
+    .class-list-item .cls-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 16px; flex-shrink: 0;
+    }
+    .class-list-item .cls-meta { flex: 1; }
+    .class-list-item .cls-name { font-weight: 700; font-size: 14px; color: var(--text-dark); }
+    .class-list-item .cls-sub { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+    .timeslot-table { width: 100%; border-collapse: collapse; }
+    .timeslot-table th, .timeslot-table td {
+      padding: 10px 14px; text-align: left; font-size: 13px;
+      border-bottom: 1px solid var(--shadow-dark);
+    }
+    .timeslot-table th { font-weight: 700; color: var(--text-light); font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; }
+    .timeslot-table td { color: var(--text); }
+    .tt-row { transition: var(--transition); }
+    .tt-row:hover { background: rgba(108,99,255,0.04); border-radius: 8px; }
+    .empty-state {
+      text-align: center; padding: 40px;
+      color: var(--text-light); font-size: 14px;
+    }
+    .empty-state .empty-icon { font-size: 36px; margin-bottom: 10px; }
+  </style>
 </head>
 <body>
-
-    <h1>👨‍💼 Admin Panel</h1>
-
-    <a href="/">
-        <button>⬅ Back</button>
+  <nav class="navbar">
+    <a href="/" class="navbar-brand">
+      <div class="brand-icon">📅</div>
+      <span class="brand-text">TimeTable Pro</span>
     </a>
+    <div class="navbar-links">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/admin" class="nav-link active">Admin</a>
+      <a href="/teacher" class="nav-link">Teacher</a>
+      <a href="/student" class="nav-link">Student</a>
+    </div>
+  </nav>
 
-    <hr>
+  <div class="page-wrapper">
+    <div class="section-title">👨‍💼 Admin Panel</div>
+    <div class="section-subtitle">Manage users, subjects, classes and schedule timetable entries</div>
 
-    <!-- ADD USER -->
-    <h2>Add User</h2>
-    <form action="/add-user" method="post">
-        <input type="text" name="name" placeholder="Name" required>
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="text" name="password" placeholder="Password" required>
+    <!-- KPI Stats -->
+    <div class="grid-4" style="margin-bottom: 32px;">
+      <div class="stat-card">
+        <div class="stat-icon purple">👥</div>
+        <div class="stat-value">{{ teachers|length }}</div>
+        <div class="stat-label">Teachers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon orange">📚</div>
+        <div class="stat-value">{{ subjects|length }}</div>
+        <div class="stat-label">Subjects</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">🏫</div>
+        <div class="stat-value">{{ classes|length }}</div>
+        <div class="stat-label">Classes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">⏰</div>
+        <div class="stat-value">—</div>
+        <div class="stat-label">Slots</div>
+      </div>
+    </div>
 
-        <select name="role">
-            <option value="teacher">Teacher</option>
-            <option value="student">Student</option>
-        </select>
+    <!-- Tabs -->
+    <div class="tabs" data-tab-group="admin">
+      <button class="tab-btn" data-tab-group="admin" data-target="tab-users">👤 Users</button>
+      <button class="tab-btn" data-tab-group="admin" data-target="tab-subjects">📚 Subjects</button>
+      <button class="tab-btn" data-tab-group="admin" data-target="tab-classes">🏫 Classes</button>
+      <button class="tab-btn" data-tab-group="admin" data-target="tab-timeslots">⏰ Timeslots</button>
+      <button class="tab-btn" data-tab-group="admin" data-target="tab-timetable">📅 Timetable</button>
+    </div>
 
-        <br>
-        <button type="submit">Add User</button>
-    </form>
+    <!-- ===== TAB: USERS ===== -->
+    <div id="tab-users" data-tab-panel="admin">
+      <div class="main-layout">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">➕ Add User</div>
+          </div>
+          <form action="/add-user" method="post">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" name="name" class="form-control" placeholder="Jane Doe" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" placeholder="jane@school.edu" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="••••••" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role</label>
+              <select name="role" class="form-control" required>
+                <option value="teacher">👨‍🏫 Teacher</option>
+                <option value="student">🎓 Student</option>
+                <option value="admin">👨‍💼 Admin</option>
+              </select>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Add User</button>
+            </div>
+          </form>
+        </div>
 
-
-    <!-- ADD SUBJECT -->
-    <h2>Add Subject</h2>
-    <form action="/add-subject" method="post">
-        <input type="text" name="name" placeholder="Subject Name" required>
-        <input type="number" name="weekly_hours" placeholder="Weekly Hours" required>
-
-        <br>
-        <button type="submit">Add Subject</button>
-    </form>
-
-
-    <!-- ADD CLASS -->
-    <h2>Add Class</h2>
-    <form action="/add-class" method="post">
-        <input type="text" name="name" placeholder="Class Name" required>
-        <input type="number" name="student_count" placeholder="Student Count">
-
-        <br>
-        <button type="submit">Add Class</button>
-    </form>
-
-
-    <!-- ASSIGN TEACHER -->
-    <h2>Assign Teacher to Subject & Class</h2>
-    <form action="/assign-teacher" method="post">
-
-        <label>Teacher:</label>
-        <select name="teacher_id">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">👨‍🏫 Teachers</div>
+          </div>
+          {% if teachers %}
             {% for teacher in teachers %}
-                <option value="{{ teacher.id }}">{{ teacher.name }}</option>
+            <div class="class-list-item">
+              <div class="cls-icon">T</div>
+              <div class="cls-meta">
+                <div class="cls-name">{{ teacher.name }}</div>
+                <div class="cls-sub">{{ teacher.email }}</div>
+              </div>
+              <span class="badge badge-success">Active</span>
+            </div>
             {% endfor %}
-        </select>
+          {% else %}
+            <div class="empty-state">
+              <div class="empty-icon">👤</div>
+              <div>No teachers added yet</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
 
-        <label>Subject:</label>
-        <select name="subject_id">
+    <!-- ===== TAB: SUBJECTS ===== -->
+    <div id="tab-subjects" data-tab-panel="admin" style="display:none">
+      <div class="main-layout">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">➕ Add Subject</div>
+          </div>
+          <form action="/add-subject" method="post">
+            <div class="form-group">
+              <label class="form-label">Subject Name</label>
+              <input type="text" name="name" class="form-control" placeholder="e.g. Physics" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Theory Hours / Week</label>
+                <input type="number" name="theory_hours" class="form-control" value="0" min="0" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Lab Hours / Week</label>
+                <input type="number" name="lab_hours" class="form-control" value="0" min="0" required>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Add Subject</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📚 All Subjects</div>
+          </div>
+          {% if subjects %}
             {% for subject in subjects %}
-                <option value="{{ subject.id }}">{{ subject.name }}</option>
+            <div class="class-list-item">
+              <div class="cls-icon" style="background: linear-gradient(135deg, var(--accent), #d4783e);">📚</div>
+              <div class="cls-meta">
+                <div class="cls-name">{{ subject.name }}</div>
+                <div class="cls-sub">
+                  Theory: {{ subject.theory_hours }}h &nbsp;|&nbsp; Lab: {{ subject.lab_hours }}h
+                </div>
+              </div>
+              {% if subject.lab_hours > 0 and subject.theory_hours > 0 %}
+                <span class="badge badge-lab">Both</span>
+              {% elif subject.lab_hours > 0 %}
+                <span class="badge badge-lab">Lab</span>
+              {% else %}
+                <span class="badge badge-theory">Theory</span>
+              {% endif %}
+            </div>
             {% endfor %}
-        </select>
+          {% else %}
+            <div class="empty-state"><div class="empty-icon">📚</div><div>No subjects added yet</div></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
 
-        <label>Class:</label>
-        <select name="class_id">
+    <!-- ===== TAB: CLASSES ===== -->
+    <div id="tab-classes" data-tab-panel="admin" style="display:none">
+      <div class="main-layout">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">➕ Create Class Section</div>
+          </div>
+          <form action="/add-class" method="post">
+            <div class="form-group">
+              <label class="form-label">Class Name</label>
+              <input type="text" name="name" class="form-control" placeholder="e.g. CS 101 — Morning" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Teacher</label>
+                <select name="teacher_id" class="form-control" required>
+                  {% for teacher in teachers %}
+                    <option value="{{ teacher.id }}">{{ teacher.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Subject</label>
+                <select name="subject_id" class="form-control" required>
+                  {% for subject in subjects %}
+                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Create Class</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🏫 All Classes</div>
+          </div>
+          {% if classes %}
             {% for cls in classes %}
-                <option value="{{ cls.id }}">{{ cls.name }}</option>
+            <div class="class-list-item">
+              <div class="cls-icon">🏫</div>
+              <div class="cls-meta">
+                <div class="cls-name">{{ cls.name }}</div>
+                <div class="cls-sub">ID #{{ cls.id }}</div>
+              </div>
+            </div>
             {% endfor %}
-        </select>
+          {% else %}
+            <div class="empty-state"><div class="empty-icon">🏫</div><div>No classes yet</div></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
 
-        <br>
-        <button type="submit">Assign</button>
-    </form>
+    <!-- ===== TAB: TIMESLOTS ===== -->
+    <div id="tab-timeslots" data-tab-panel="admin" style="display:none">
+      <div class="main-layout">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">➕ Add Time Slot</div>
+          </div>
+          <form action="/add-timeslot" method="post">
+            <div class="form-group">
+              <label class="form-label">Day</label>
+              <select name="day" class="form-control" required>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Start Time</label>
+                <input type="time" name="start_time" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">End Time</label>
+                <input type="time" name="end_time" class="form-control" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                <input type="checkbox" name="is_break" id="isBreak" style="width:18px;height:18px;cursor:pointer;">
+                <span class="form-label" style="margin:0;">Mark as Break Slot</span>
+              </label>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Add Slot</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">⏰ Existing Slots</div>
+            <span class="badge badge-theory">Manage from admin</span>
+          </div>
+          <div class="empty-state">
+            <div class="empty-icon">⏰</div>
+            <div>Slot list available in the Timetable calendar view</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <!-- ===== TAB: TIMETABLE ===== -->
+    <div id="tab-timetable" data-tab-panel="admin" style="display:none">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <div class="card-title">📅 Schedule a Timetable Entry</div>
+        </div>
+        <form action="/create-timetable" method="post">
+          <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+            <div class="form-group">
+              <label class="form-label">Class</label>
+              <select name="class_id" class="form-control" required>
+                {% for cls in classes %}
+                  <option value="{{ cls.id }}">{{ cls.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time Slot ID</label>
+              <input type="number" name="timeslot_id" class="form-control" placeholder="Slot ID" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Entry Type</label>
+              <select name="entry_type" class="form-control" required>
+                <option value="theory">📖 Theory (1 slot)</option>
+                <option value="lab">🔬 Lab (2 consecutive slots)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">📅 Create Entry</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">💡 Tip</div>
+        </div>
+        <p style="font-size:14px; color: var(--text-light); line-height: 1.7;">
+          Go to the <strong>Student panel</strong> to see the drag-and-drop timetable calendar. 
+          The Admin can also assign entries using the form above. Lab entries automatically book 2 consecutive slots.
+        </p>
+      </div>
+    </div>
 
-    <!-- ADD TIME SLOT -->
-    <h2>Add Time Slot</h2>
-    <form action="/add-timeslot" method="post">
+  </div>
 
-        <input type="text" name="day" placeholder="Day (Mon, Tue...)" required>
-
-        <label>Start:</label>
-        <input type="time" name="start_time" required>
-
-        <label>End:</label>
-        <input type="time" name="end_time" required>
-
-        <label>Break:</label>
-        <input type="checkbox" name="is_break">
-
-        <br>
-        <button type="submit">Add Slot</button>
-    </form>
-
-
-    <!-- CREATE TIMETABLE -->
-    <h2>Create Timetable Entry</h2>
-    <form action="/create-timetable" method="post">
-
-        <label>Class:</label>
-        <select name="class_id">
-            {% for cls in classes %}
-                <option value="{{ cls.id }}">{{ cls.name }}</option>
-            {% endfor %}
-        </select>
-
-        <label>Subject ID:</label>
-        <input type="number" name="subject_id" required>
-
-        <label>Teacher ID:</label>
-        <input type="number" name="teacher_id" required>
-
-        <label>Time Slot ID:</label>
-        <input type="number" name="timeslot_id" required>
-
-        <br>
-        <button type="submit">Create</button>
-    </form>
-
-
-    <script src="/static/js/script.js"></script>
-
+  <script src="/static/js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initTabs('admin');
+    });
+  </script>
 </body>
 </html>

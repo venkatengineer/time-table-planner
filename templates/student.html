@@ -1,63 +1,461 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Student Timetable</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Timetable — TimeTable Pro</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .student-layout { display: grid; grid-template-columns: 280px 1fr; gap: 28px; }
+    @media(max-width:960px){ .student-layout{grid-template-columns:1fr;} }
 
-    <link rel="stylesheet" href="/static/css/style.css">
+    /* ===  DRAG CLASSES SIDEBAR === */
+    .available-class {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--bg);
+      box-shadow: 4px 4px 9px var(--shadow-dark), -4px -4px 9px var(--shadow-light);
+      cursor: grab; user-select: none;
+      transition: var(--transition);
+      margin-bottom: 10px;
+      animation: fadeSlideIn 0.3s ease forwards;
+      position: relative;
+    }
+    .available-class:hover {
+      transform: translateX(3px);
+      box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+    }
+    .available-class:active { cursor: grabbing; opacity: 0.7; transform: scale(0.96); }
+    .available-class .cls-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+    }
+    .available-class .cls-name { font-weight: 700; font-size: 13px; color: var(--text-dark); line-height: 1.3; }
+    .available-class .cls-teacher { font-size: 11px; color: var(--text-light); }
+    .available-class .cls-badge { margin-left: auto; }
 
-    <style>
-        body {
-            font-family: Arial;
-            text-align: center;
-        }
+    /* === CALENDAR === */
+    .cal-wrapper { overflow-x: auto; }
+    .calendar {
+      display: grid;
+      grid-template-columns: 90px repeat(5, 1fr);
+      gap: 8px;
+      min-width: 680px;
+    }
+    .cal-head-row {
+      display: contents;
+    }
+    .cal-day-header {
+      padding: 10px 8px;
+      text-align: center;
+      font-size: 12px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 1px;
+      border-radius: 10px;
+      background: var(--bg);
+      box-shadow: 3px 3px 7px var(--shadow-dark), -3px -3px 7px var(--shadow-light);
+    }
+    .cal-time-col {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 6px; text-align: center;
+      font-size: 11px; font-weight: 700; color: var(--text-light);
+      line-height: 1.4;
+    }
+    .cal-time-col .t-main { font-size: 14px; font-weight: 800; color: var(--text); }
+    
+    .cal-slot {
+      min-height: 80px;
+      border-radius: 14px;
+      background: var(--bg);
+      box-shadow: inset 2px 2px 6px var(--shadow-dark), inset -2px -2px 6px var(--shadow-light);
+      padding: 6px;
+      position: relative;
+      transition: var(--transition);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .cal-slot.break-slot {
+      background: linear-gradient(135deg, rgba(240,195,109,0.12), rgba(240,150,87,0.08));
+      box-shadow: inset 1px 1px 4px var(--shadow-dark), inset -1px -1px 4px var(--shadow-light);
+    }
+    .cal-slot[data-timeslot-id]:not(.break-slot):hover {
+      box-shadow: inset 3px 3px 8px rgba(108,99,255,0.2), inset -3px -3px 8px rgba(108,99,255,0.05);
+      background: rgba(108,99,255,0.03);
+    }
+    .cal-slot.drag-over {
+      background: rgba(108,99,255,0.07);
+      box-shadow: inset 4px 4px 10px rgba(108,99,255,0.25), inset -4px -4px 10px rgba(108,99,255,0.1);
+    }
+    .break-label {
+      font-size: 11px; font-weight: 600; color: var(--warning);
+      text-align: center; margin: auto; width: 100%;
+    }
 
-        table {
-            margin: auto;
-            border-collapse: collapse;
-            width: 80%;
-        }
+    /* === CHIPS IN CALENDAR === */
+    .scheduled-chip {
+      padding: 6px 10px;
+      border-radius: 9px;
+      color: white;
+      font-size: 11px; font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      box-shadow: 2px 2px 6px rgba(108,99,255,0.35);
+      display: flex; align-items: center; gap: 5px;
+      animation: fadeSlideIn 0.3s ease forwards;
+      cursor: default;
+    }
+    .scheduled-chip.lab-chip {
+      background: linear-gradient(135deg, var(--accent), #d4783e);
+      box-shadow: 2px 2px 6px rgba(240,150,87,0.35);
+    }
 
-        th, td {
-            border: 1px solid black;
-            padding: 10px;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    /* === ENROLL SECTION === */
+    .enroll-card {
+      margin-bottom: 24px;
+    }
+    .enrolled-course {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: var(--bg);
+      box-shadow: 3px 3px 7px var(--shadow-dark), -3px -3px 7px var(--shadow-light);
+      margin-bottom: 10px;
+      animation: fadeSlideIn 0.3s ease forwards;
+    }
+    .enrolled-avatar {
+      width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 16px;
+    }
+    .enrolled-name { font-weight: 700; font-size: 14px; color: var(--text-dark); }
+    .enrolled-meta { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+    .empty-cal {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; padding: 30px; color: var(--text-light); font-size: 13px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-
-    <h1>🎓 Student Timetable</h1>
-
-    <a href="/">
-        <button>⬅ Back</button>
+  <nav class="navbar">
+    <a href="/" class="navbar-brand">
+      <div class="brand-icon">📅</div>
+      <span class="brand-text">TimeTable Pro</span>
     </a>
+    <div class="navbar-links">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/admin" class="nav-link">Admin</a>
+      <a href="/teacher" class="nav-link">Teacher</a>
+      <a href="/student" class="nav-link active">Student</a>
+    </div>
+  </nav>
 
-    <br><br>
+  <div class="page-wrapper">
+    <div class="section-title">🎓 Student Panel</div>
+    <div class="section-subtitle">Enroll in classes and drag them into your weekly timetable</div>
 
-    <table>
-        <tr>
-            <th>Class</th>
-            <th>Subject</th>
-            <th>Teacher</th>
-            <th>Time Slot</th>
-        </tr>
+    <!-- Enroll Section -->
+    <div class="card enroll-card">
+      <div class="card-header">
+        <div class="card-title">📋 Enroll in a Class</div>
+      </div>
+      <form action="/enroll-student" method="post" style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;">
+        <div class="form-group" style="flex:1;min-width:180px;margin:0;">
+          <label class="form-label">Student</label>
+          <select name="student_id" class="form-control" required>
+            {% for student in students %}
+              <option value="{{ student.id }}">{{ student.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="flex:1;min-width:200px;margin:0;">
+          <label class="form-label">Class / Course</label>
+          <select name="class_id" class="form-control" required>
+            {% for cls in classes %}
+              <option value="{{ cls.id }}">{{ cls.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="padding-bottom:1px;">
+          <button type="submit" class="btn btn-primary">➕ Enroll</button>
+        </div>
+      </form>
+    </div>
 
-        {% for row in timetable %}
-        <tr>
-            <td>{{ row.class_id }}</td>
-            <td>{{ row.subject_id }}</td>
-            <td>{{ row.teacher_id }}</td>
-            <td>{{ row.timeslot_id }}</td>
-        </tr>
-        {% endfor %}
+    <div class="student-layout">
+      <!-- LEFT: Enrolled Classes -->
+      <div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-header">
+            <div class="card-title">My Courses</div>
+            <span class="badge badge-theory">{{ enrollments|length }}</span>
+          </div>
+          {% for enr in enrollments %}
+            {% for cls in classes %}
+              {% if cls.id == enr.class_id %}
+              <div class="enrolled-course">
+                <div class="enrolled-avatar">📚</div>
+                <div>
+                  <div class="enrolled-name">{{ cls.name }}</div>
+                  <div class="enrolled-meta">Class ID #{{ cls.id }}</div>
+                </div>
+              </div>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+          {% if not enrollments %}
+            <div class="empty-cal">
+              <div style="font-size:32px;">📋</div>
+              <div>No enrollments yet.<br>Use the form above to enroll.</div>
+            </div>
+          {% endif %}
+        </div>
 
-    </table>
+        <!-- Drag from here -->
+        <div class="sidebar-panel">
+          <h3>🖱 Drag to Schedule</h3>
+          <p style="font-size:12px;color:var(--text-light);margin-bottom:12px;">Drag a class onto a free slot in the calendar →</p>
+          {% for enr in enrollments %}
+            {% for cls in classes %}
+              {% if cls.id == enr.class_id %}
+              <div class="available-class"
+                data-draggable="true"
+                data-class-id="{{ cls.id }}"
+                data-class-name="{{ cls.name }}"
+                data-subject-name="{{ cls.name }}"
+                data-teacher-name="Teacher {{ cls.teacher_id }}"
+                data-chip-type="theory"
+                draggable="true"
+              >
+                <div class="cls-dot"></div>
+                <div>
+                  <div class="cls-name">{{ cls.name }}</div>
+                  <div class="cls-teacher">Teacher #{{ cls.teacher_id }}</div>
+                </div>
+                <span class="badge badge-theory cls-badge">Theory</span>
+              </div>
+              {% if cls.id == enr.class_id %}
+              <div class="available-class"
+                data-draggable="true"
+                data-class-id="{{ cls.id }}"
+                data-class-name="{{ cls.name }} (Lab)"
+                data-subject-name="{{ cls.name }}"
+                data-teacher-name="Teacher {{ cls.teacher_id }}"
+                data-chip-type="lab"
+                draggable="true"
+                style="border-left: 3px solid var(--accent);"
+              >
+                <div class="cls-dot" style="background: linear-gradient(135deg, var(--accent), #d4783e);"></div>
+                <div>
+                  <div class="cls-name">{{ cls.name }}</div>
+                  <div class="cls-teacher">Lab Session</div>
+                </div>
+                <span class="badge badge-lab cls-badge">Lab</span>
+              </div>
+              {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+          {% if not enrollments %}
+            <div class="empty-cal"><div style="font-size:24px;">📭</div><div>Enroll in a class first</div></div>
+          {% endif %}
+        </div>
+      </div>
 
-    <script src="/static/js/script.js"></script>
+      <!-- RIGHT: Calendar Grid -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📆 Weekly Timetable</div>
+          <span class="badge badge-success">Drag classes here</span>
+        </div>
 
+        <div class="cal-wrapper">
+          <!-- Build calendar from timetable data -->
+          {% set days = ['Monday','Tuesday','Wednesday','Thursday','Friday'] %}
+          {% set day_slots = namespace(data={}) %}
+
+          <div class="calendar">
+            <!-- Header row -->
+            <div></div>
+            {% for day in days %}
+              <div class="cal-day-header">{{ day[:3] }}</div>
+            {% endfor %}
+
+            <!-- Body: one row per unique slot time -->
+            {% set shown_ids = [] %}
+            {% for tt_row in timetable %}
+              <!-- time row placeholder, built in JS -->
+            {% endfor %}
+            
+            <!-- Static rows based on timeslot ids in timetable -->
+            <!-- We'll generate all time rows dynamically -->
+          </div>
+
+          <!-- JS-driven calendar body below -->
+          <div id="calBody" style="margin-top: 8px;"></div>
+        </div>
+
+        <!-- Pass timetable data to JS -->
+        <script id="ttData" type="application/json">
+          {{ timetable | tojson }}
+        </script>
+        <script id="classData" type="application/json">
+          {{ classes_json | tojson | safe }}
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/script.js"></script>
+  <script>
+  // Parse timetable and class data from server
+  const ttRows = JSON.parse(document.getElementById('ttData').textContent || '[]');
+  const classRows = JSON.parse(document.getElementById('classData').textContent || '[]');
+  const classMap = {};
+  classRows.forEach(c => { classMap[c.id] = c; });
+
+  // Days constant
+  const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+
+  // Build calendar dynamically
+  const calBody = document.getElementById('calBody');
+
+  // Fetch timeslots from server via API or use embedded data
+  async function buildCalendar() {
+    let slots = [];
+    try {
+      // fetch timeslot data from api
+      const resp = await fetch('/api/timeslots');
+      if (resp.ok) slots = await resp.json();
+    } catch(e) { slots = []; }
+
+    if (!slots.length) {
+      calBody.innerHTML = `<div class="empty-cal" style="padding:50px 20px;"><div style="font-size:36px;">📭</div><div>No time slots found.<br><a href="/admin" style="color:var(--primary);">Add slots in Admin →</a></div></div>`;
+      return;
+    }
+
+    // Group by day
+    const byDay = {};
+    DAYS.forEach(d => byDay[d] = []);
+    slots.forEach(s => {
+      if (byDay[s.day]) byDay[s.day].push(s);
+    });
+
+    // Find all unique times across all days for row structure
+    const uniqueTimes = [...new Set(slots.map(s => s.id))].sort((a,b)=>a-b);
+
+    // Build grid
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:90px repeat(5,1fr);gap:8px;min-width:680px;overflow-x:auto;';
+
+    // Row header
+    const emptyHead = document.createElement('div');
+    grid.appendChild(emptyHead);
+    DAYS.forEach(d => {
+      const h = document.createElement('div');
+      h.className = 'cal-day-header';
+      h.textContent = d.slice(0,3);
+      grid.appendChild(h);
+    });
+
+    // Collect scheduled entries: map timeslot_id → classId
+    const scheduled = {};
+    ttRows.forEach(r => {
+      if (!scheduled[r.timeslot_id]) scheduled[r.timeslot_id] = [];
+      scheduled[r.timeslot_id].push(r.class_id);
+    });
+
+    // For each unique slot (de-duped by ID), create a row
+    slots.filter((s,i,arr) => arr.findIndex(x=>x.id===s.id)===i).forEach(slot => {
+      // Time label
+      const timeCol = document.createElement('div');
+      timeCol.className = 'cal-time-col';
+      timeCol.innerHTML = `<span class="t-main">${slot.start_time || ''}</span><span>${slot.end_time || ''}</span>`;
+      grid.appendChild(timeCol);
+
+      DAYS.forEach(day => {
+        const daySlot = slots.find(s => s.day === day && s.id === slot.id)
+                     || slots.find(s => s.day === day && s.start_time === slot.start_time);
+
+        const cell = document.createElement('div');
+        cell.className = 'cal-slot';
+
+        if (daySlot) {
+          if (daySlot.is_break) {
+            cell.classList.add('break-slot');
+            cell.innerHTML = `<div class="break-label">☕ Break</div>`;
+          } else {
+            cell.dataset.timeslotId = daySlot.id;
+            cell.dataset.day = day;
+            // Drop zone
+            cell.addEventListener('dragover', (e) => { e.preventDefault(); cell.classList.add('drag-over'); });
+            cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
+            cell.addEventListener('drop', handleCellDrop);
+            // Render scheduled chips
+            if (scheduled[daySlot.id]) {
+              scheduled[daySlot.id].forEach(classId => {
+                const chip = document.createElement('div');
+                chip.className = 'scheduled-chip';
+                const cls = classMap[classId];
+                chip.innerHTML = `<span>📚</span><span>${cls ? cls.name : 'Class '+classId}</span>`;
+                cell.appendChild(chip);
+              });
+            }
+          }
+        } else {
+          // No matching slot for this day at this time
+          cell.style.opacity = '0.3';
+        }
+
+        grid.appendChild(cell);
+      });
+    });
+
+    calBody.appendChild(grid);
+
+    // Re-init drag on draggable items
+    initDragDrop();
+  }
+
+  async function handleCellDrop(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
+    if (!draggedData) return;
+
+    const timeslotId = this.dataset.timeslotId;
+    const body = new URLSearchParams({
+      class_id: draggedData.classId,
+      timeslot_id: timeslotId,
+      entry_type: draggedData.chipType
+    });
+
+    try {
+      const resp = await fetch('/create-timetable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+        redirect: 'manual'
+      });
+
+      if (resp.ok || resp.type === 'opaqueredirect' || resp.status === 0) {
+        const chip = document.createElement('div');
+        chip.className = `scheduled-chip ${draggedData.chipType === 'lab' ? 'lab-chip' : ''}`;
+        chip.innerHTML = `<span>${draggedData.chipType === 'lab' ? '🔬' : '📚'}</span><span>${draggedData.subjectName}</span>`;
+        this.appendChild(chip);
+        showToast(`${draggedData.className} scheduled!`, 'success');
+        if (draggedItem) draggedItem.remove();
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        showToast('Time slot may already be occupied', 'error');
+      }
+    } catch (err) {
+      showToast('Connection error', 'error');
+    }
+
+    draggedData = null;
+    draggedItem = null;
+  }
+
+  buildCalendar();
+  </script>
 </body>
 </html>
