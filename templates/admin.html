@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel — TimeTable Pro</title>
-  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/style.css?v=2.1">
   <style>
     .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
     @media(max-width:900px){ .main-layout{grid-template-columns:1fr;} }
@@ -57,6 +57,7 @@
       <a href="/admin" class="nav-link active">Admin</a>
       <a href="/teacher" class="nav-link">Teacher</a>
       <a href="/student" class="nav-link">Student</a>
+      <a href="/logout" class="nav-link" style="color:var(--danger)">Logout</a>
     </div>
   </nav>
 
@@ -325,51 +326,196 @@
 
     <!-- ===== TAB: TIMETABLE ===== -->
     <div id="tab-timetable" data-tab-panel="admin" style="display:none">
-      <div class="card" style="margin-bottom: 24px;">
-        <div class="card-header">
-          <div class="card-title">📅 Schedule a Timetable Entry</div>
-        </div>
-        <form action="/create-timetable" method="post">
-          <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
-            <div class="form-group">
-              <label class="form-label">Class</label>
-              <select name="class_id" class="form-control" required>
-                {% for cls in classes %}
-                  <option value="{{ cls.id }}">{{ cls.name }}</option>
-                {% endfor %}
-              </select>
+      <div class="admin-calendar-layout" style="display: grid; grid-template-columns: 280px 1fr; gap: 24px;">
+        
+        <!-- Left: Draggable Classes -->
+        <div class="sidebar-panel">
+          <h3>🖱 Drag to Schedule</h3>
+          <p style="font-size:12px;color:var(--text-light);margin-bottom:12px;">Drag a class onto a free slot in the master calendar →</p>
+          <div style="max-height:600px;overflow-y:auto;padding-right:4px;">
+          {% for cls in classes %}
+            <div class="available-class"
+              data-draggable="true"
+              data-class-id="{{ cls.id }}"
+              data-class-name="{{ cls.name }}"
+              data-subject-name="{{ cls.name }}"
+              data-teacher-name="Teacher {{ cls.teacher_id }}"
+              data-chip-type="theory"
+              draggable="true"
+            >
+              <div class="cls-dot"></div>
+              <div>
+                <div class="cls-name">{{ cls.name }}</div>
+                <div class="cls-teacher">Teacher #{{ cls.teacher_id }}</div>
+              </div>
+              <span class="badge badge-theory cls-badge">Theory</span>
             </div>
-            <div class="form-group">
-              <label class="form-label">Time Slot ID</label>
-              <input type="number" name="timeslot_id" class="form-control" placeholder="Slot ID" required>
+            <div class="available-class"
+              data-draggable="true"
+              data-class-id="{{ cls.id }}"
+              data-class-name="{{ cls.name }} (Lab)"
+              data-subject-name="{{ cls.name }}"
+              data-teacher-name="Teacher {{ cls.teacher_id }}"
+              data-chip-type="lab"
+              draggable="true"
+              style="border-left: 3px solid var(--accent);"
+            >
+              <div class="cls-dot" style="background: linear-gradient(135deg, var(--accent), #d4783e);"></div>
+              <div>
+                <div class="cls-name">{{ cls.name }}</div>
+                <div class="cls-teacher">Lab Session</div>
+              </div>
+              <span class="badge badge-lab cls-badge">Lab</span>
             </div>
-            <div class="form-group">
-              <label class="form-label">Entry Type</label>
-              <select name="entry_type" class="form-control" required>
-                <option value="theory">📖 Theory (1 slot)</option>
-                <option value="lab">🔬 Lab (2 consecutive slots)</option>
-              </select>
-            </div>
+          {% endfor %}
           </div>
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary">📅 Create Entry</button>
-          </div>
-        </form>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">💡 Tip</div>
         </div>
-        <p style="font-size:14px; color: var(--text-light); line-height: 1.7;">
-          Go to the <strong>Student panel</strong> to see the drag-and-drop timetable calendar. 
-          The Admin can also assign entries using the form above. Lab entries automatically book 2 consecutive slots.
-        </p>
+
+        <!-- Right: Master Calendar -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📅 Master Timetable</div>
+            <span class="badge badge-success">Drag classes here</span>
+          </div>
+          <div class="cal-wrapper">
+             <div id="adminCalBody" style="margin-top: 8px;"></div>
+          </div>
+        </div>
+
       </div>
     </div>
 
   </div>
 
-  <script src="/static/js/script.js"></script>
+  <!-- Admin Timetable Script -->
+  <script>
+    const adminSlots = [
+      {% for s in timeslots %}
+        { id: {{ s.id }}, day: "{{ s.day }}", start_time: "{{ s.start_time.strftime('%H:%M') if s.start_time else '' }}", end_time: "{{ s.end_time.strftime('%H:%M') if s.end_time else '' }}", is_break: {{ 'true' if s.is_break else 'false' }} },
+      {% endfor %}
+    ];
+    const adminTT = [
+      {% for t in timetable %}
+        { class_id: {{ t.class_id }}, timeslot_id: {{ t.timeslot_id }} },
+      {% endfor %}
+    ];
+    const adminClassMap = {};
+    {% for c in classes %}
+      adminClassMap[{{ c.id }}] = "{{ c.name }}";
+    {% endfor %}
+    
+    // Group scheduled items by timeslot
+    const adminScheduled = {};
+    adminTT.forEach(r => {
+      if (!adminScheduled[r.timeslot_id]) adminScheduled[r.timeslot_id] = [];
+      adminScheduled[r.timeslot_id].push(r.class_id);
+    });
+
+    const adminDAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+    const adminCalBody = document.getElementById('adminCalBody');
+
+    function buildAdminCalendar() {
+      if (!adminSlots.length) {
+        if(adminCalBody) adminCalBody.innerHTML = `<div class="empty-cal"><div style="font-size:36px;">📭</div><div>No time slots defined.</div></div>`;
+        return;
+      }
+
+      const grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:90px repeat(5,1fr);gap:8px;min-width:680px;overflow-x:auto;';
+
+      grid.appendChild(document.createElement('div'));
+      adminDAYS.forEach(d => {
+        const h = document.createElement('div');
+        h.className = 'cal-day-header';
+        h.textContent = d.slice(0,3);
+        grid.appendChild(h);
+      });
+
+      adminSlots.filter((s,i,arr) => arr.findIndex(x=>x.id===s.id)===i).forEach(slot => {
+        const timeCol = document.createElement('div');
+        timeCol.className = 'cal-time-col';
+        timeCol.innerHTML = `<span class="t-main">${slot.start_time}</span><span>${slot.end_time}</span>`;
+        grid.appendChild(timeCol);
+
+        adminDAYS.forEach(day => {
+          const daySlot = adminSlots.find(s => s.day === day && s.id === slot.id)
+                       || adminSlots.find(s => s.day === day && s.start_time === slot.start_time);
+
+          const cell = document.createElement('div');
+          cell.className = 'cal-slot';
+
+          if (daySlot) {
+            if (daySlot.is_break) {
+              cell.classList.add('break-slot');
+              cell.innerHTML = `<div class="break-label">☕ Break</div>`;
+            } else {
+              cell.dataset.timeslotId = daySlot.id;
+              // Drop zone
+              cell.addEventListener('dragover', (e) => { e.preventDefault(); cell.classList.add('drag-over'); });
+              cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
+              cell.addEventListener('drop', handleAdminCellDrop);
+              
+              if (adminScheduled[daySlot.id]) {
+                adminScheduled[daySlot.id].forEach(classId => {
+                  const chip = document.createElement('div');
+                  chip.className = 'scheduled-chip';
+                  chip.innerHTML = `<span>📚</span><span>${adminClassMap[classId] || 'Class '+classId}</span>`;
+                  cell.appendChild(chip);
+                });
+              }
+            }
+          } else {
+            cell.style.opacity = '0.3';
+          }
+          grid.appendChild(cell);
+        });
+      });
+
+      if(adminCalBody) adminCalBody.appendChild(grid);
+    }
+
+    async function handleAdminCellDrop(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      if (!window.draggedData) return;
+
+      const body = new URLSearchParams({
+        class_id: window.draggedData.classId,
+        timeslot_id: this.dataset.timeslotId,
+        entry_type: window.draggedData.chipType
+      });
+
+      try {
+        const resp = await fetch('/create-timetable', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body,
+          redirect: 'manual'
+        });
+
+        if (resp.ok || resp.type === 'opaqueredirect' || resp.status === 0) {
+          showToast(`${window.draggedData.className} assigned to master timetable!`, 'success');
+          setTimeout(() => location.reload(), 800);
+        } else {
+          showToast('Time slot may already be occupied', 'error');
+        }
+      } catch (err) {
+        showToast('Connection error', 'error');
+      }
+
+      window.draggedData = null;
+      if (window.draggedItem) window.draggedItem.remove();
+      window.draggedItem = null;
+    }
+
+    // Call after DOM load, then initialize drag-and-drop
+    document.addEventListener('DOMContentLoaded', () => {
+      buildAdminCalendar();
+      if(window.initDragDrop) window.initDragDrop();
+    });
+  </script>
+
+  <script src="/static/js/script.js?v=2.1"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       initTabs('admin');

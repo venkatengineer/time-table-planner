@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TimeTable Pro — Smart Schedule Management</title>
   <meta name="description" content="Manage your school timetable effortlessly — assign classes, pick free slots, and enroll in courses.">
-  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/style.css?v=3.0">
   <style>
     .hero {
       min-height: 100vh;
@@ -63,6 +63,7 @@
     .hero-title span {
       background: linear-gradient(135deg, var(--primary), var(--accent));
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
     .hero-subtitle {
@@ -172,17 +173,17 @@
     <p class="hero-subtitle">Drag & drop classes, teachers pick free slots, students book their courses — all in one elegant platform.</p>
 
     <div class="role-cards">
-      <a href="/admin" class="role-card">
+      <a href="/login?role=admin" class="role-card">
         <div class="role-emoji">👨‍💼</div>
         <div class="role-name">Admin</div>
         <div class="role-desc">Manage subjects, classes & assign timetable slots</div>
       </a>
-      <a href="/teacher" class="role-card">
+      <a href="/login?role=teacher" class="role-card">
         <div class="role-emoji">👨‍🏫</div>
         <div class="role-name">Teacher</div>
         <div class="role-desc">Mark your availability and see your schedule</div>
       </a>
-      <a href="/student" class="role-card">
+      <a href="/login?role=student" class="role-card">
         <div class="role-emoji">🎓</div>
         <div class="role-name">Student</div>
         <div class="role-desc">Enroll in classes and view your personalised timetable</div>
@@ -197,6 +198,6 @@
     </div>
   </div>
 
-  <script src="/static/js/script.js"></script>
+  <script src="/static/js/script.js?v=3.0"></script>
 </body>
 </html>

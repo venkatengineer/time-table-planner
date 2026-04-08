@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Depends, Form
+from fastapi import FastAPI, Request, Depends, Form, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -29,6 +29,48 @@ def get_db():
         db.close()
 
 
+# ---------------- AUTH ROUTES ---------------- #
+
+@app.get("/login", response_class=HTMLResponse)
+def login_page(request: Request, role: str = "student", error: str = None):
+    return templates.TemplateResponse("login.html", {"request": request, "role": role, "error": error})
+
+@app.post("/login")
+def login_post(
+    response: Response,
+    email: str = Form(...),
+    password: str = Form(...),
+    role: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    user = db.query(models.User).filter(
+        models.User.email == email,
+        models.User.password == password,
+        models.User.role == role
+    ).first()
+
+    if not user:
+        return templates.TemplateResponse("login.html", {
+            "request": {},
+            "role": role,
+            "error": "Invalid email or password."
+        })
+
+    # Successful login, redirect to dashboard and set cookies
+    redirect_url = f"/{role}"
+    res = RedirectResponse(redirect_url, status_code=303)
+    res.set_cookie(key="user_id", value=str(user.id))
+    res.set_cookie(key="user_role", value=user.role)
+    return res
+
+@app.get("/logout")
+def logout():
+    res = RedirectResponse("/", status_code=303)
+    res.delete_cookie("user_id")
+    res.delete_cookie("user_role")
+    return res
+
+
 # ---------------- PAGE ROUTES ---------------- #
 
 @app.get("/", response_class=HTMLResponse)
@@ -38,61 +80,82 @@ def home(request: Request):
 
 @app.get("/admin", response_class=HTMLResponse)
 def admin_page(request: Request, db: Session = Depends(get_db)):
+    if request.cookies.get("user_role") != "admin":
+        return RedirectResponse("/login?role=admin", status_code=303)
+
     teachers = db.query(models.User).filter(models.User.role == "teacher").all()
     subjects = db.query(models.Subject).all()
     classes = db.query(models.Class).all()
+    timeslots = db.query(models.TimeSlot).all()
+    timetable = db.query(models.Timetable).all()
 
     return templates.TemplateResponse("admin.html", {
         "request": request,
         "teachers": teachers,
         "subjects": subjects,
-        "classes": classes
+        "classes": classes,
+        "timeslots": timeslots,
+        "timetable": timetable
     })
 
 
 @app.get("/student", response_class=HTMLResponse)
 def student_page(request: Request, db: Session = Depends(get_db)):
-    data = db.query(models.Timetable).all()
+    user_id = request.cookies.get("user_id")
+    user_role = request.cookies.get("user_role")
+    
+    if not user_id or user_role != "student":
+        return RedirectResponse("/login?role=student", status_code=303)
+
+    # Only pass this student's enrollments
+    enrollments = db.query(models.StudentEnrollment).filter(models.StudentEnrollment.student_id == int(user_id)).all()
+    enrolled_class_ids = [e.class_id for e in enrollments]
+
+    # Only show timetable for enrolled classes
+    data = db.query(models.Timetable).filter(models.Timetable.class_id.in_(enrolled_class_ids)).all() if enrolled_class_ids else []
+    
     timetable = []
     for row in data:
         cls = db.query(models.Class).filter(models.Class.id == row.class_id).first()
-        timetable.append({
-            "class_id": row.class_id,
-            "subject_id": cls.subject_id if cls else None,
-            "teacher_id": cls.teacher_id if cls else None,
-            "timeslot_id": row.timeslot_id
-        })
+        if cls:
+            timetable.append({
+                "class_id": row.class_id,
+                "subject_id": cls.subject_id,
+                "teacher_id": cls.teacher_id,
+                "timeslot_id": row.timeslot_id
+            })
 
     classes_orm = db.query(models.Class).all()
-    # Serialize to plain dicts for JSON embedding in the template
     classes_json = [
         {"id": c.id, "name": c.name, "teacher_id": c.teacher_id, "subject_id": c.subject_id}
         for c in classes_orm
     ]
 
-    students = db.query(models.User).filter(models.User.role == "student").all()
-    enrollments = db.query(models.StudentEnrollment).all()
-
     return templates.TemplateResponse("student.html", {
         "request": request,
         "timetable": timetable,
-        "classes": classes_orm,        # used in Jinja loops
-        "classes_json": classes_json,  # used in JS
-        "students": students,
-        "enrollments": enrollments
+        "classes": classes_orm,
+        "classes_json": classes_json,
+        "enrollments": enrollments,
+        "student_id": user_id
     })
 
 
 @app.get("/teacher", response_class=HTMLResponse)
 def teacher_page(request: Request, db: Session = Depends(get_db)):
-    teachers = db.query(models.User).filter(models.User.role == "teacher").all()
+    user_id = request.cookies.get("user_id")
+    if request.cookies.get("user_role") != "teacher":
+        return RedirectResponse("/login?role=teacher", status_code=303)
+
     timeslots = db.query(models.TimeSlot).all()
-    availability = db.query(models.TeacherAvailability).all()
+    # Only get this teacher's availability
+    availability = db.query(models.TeacherAvailability).filter(models.TeacherAvailability.teacher_id == int(user_id)).all()
+    
     return templates.TemplateResponse("teacher.html", {
         "request": request,
-        "teachers": teachers,
         "timeslots": timeslots,
-        "availability": availability
+        "availability": availability,
+        "teacher_id": user_id
     })
 
 
@@ -157,21 +220,31 @@ def add_class(
     return RedirectResponse("/admin", status_code=303)
 
 
-# 🎓 Enroll Student
-@app.post("/enroll-student")
-def enroll_student(
-    student_id: int = Form(...),
-    class_id: int = Form(...),
-    db: Session = Depends(get_db)
-):
-    enrollment = models.StudentEnrollment(
-        student_id=student_id,
-        class_id=class_id
-    )
+# 🎓 Toggle Student Enrollment
+@app.post("/toggle-enroll")
+async def toggle_enroll(request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    class_id = int(data.get("class_id"))
+    student_id = request.cookies.get("user_id")
+    if not student_id:
+        return {"error": "Unauthorized"}
+        
+    student_id = int(student_id)
+
+    existing = db.query(models.StudentEnrollment).filter(
+        models.StudentEnrollment.student_id == student_id,
+        models.StudentEnrollment.class_id == class_id
+    ).first()
+
+    if existing:
+        db.delete(existing)
+        db.commit()
+        return {"status": "removed"}
+    
+    enrollment = models.StudentEnrollment(student_id=student_id, class_id=class_id)
     db.add(enrollment)
     db.commit()
-    
-    return RedirectResponse("/student", status_code=303)
+    return {"status": "added"}
 
 # ⏰ Add Time Slot
 @app.post("/add-timeslot")
@@ -248,21 +321,41 @@ def create_timetable(
 
     return RedirectResponse("/admin", status_code=303)
 
-@app.post("/add-availability")
-def add_availability(
-    teacher_id: int = Form(...),
-    timeslot_id: int = Form(...),
-    db: Session = Depends(get_db)
-):
-    availability = models.TeacherAvailability(
-        teacher_id=teacher_id,
-        timeslot_id=timeslot_id
-    )
+# 👨‍🏫 Toggle Teacher Availability
+@app.post("/toggle-availability")
+async def toggle_availability(request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    timeslot_id = int(data.get("timeslot_id"))
+    teacher_id = request.cookies.get("user_id")
+    if not teacher_id:
+        return {"error": "Unauthorized"}
+    
+    teacher_id = int(teacher_id)
 
+    # Check if this teacher already has an entry for this slot
+    existing = db.query(models.TeacherAvailability).filter(
+        models.TeacherAvailability.teacher_id == teacher_id,
+        models.TeacherAvailability.timeslot_id == timeslot_id
+    ).first()
+
+    if existing:
+        db.delete(existing)
+        db.commit()
+        return {"status": "removed"}
+    
+    # Check max limit: Prevent more than 2 teachers picking the same slot
+    count = db.query(models.TeacherAvailability).filter(
+        models.TeacherAvailability.timeslot_id == timeslot_id
+    ).count()
+
+    if count >= 2:
+        return {"error": "Slot capacity reached (Max 2 teachers). Please pick another time."}
+
+    availability = models.TeacherAvailability(teacher_id=teacher_id, timeslot_id=timeslot_id)
     db.add(availability)
     db.commit()
 
-    return RedirectResponse("/teacher", status_code=303)
+    return {"status": "added"}
 
 
 

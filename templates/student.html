@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Timetable — TimeTable Pro</title>
-  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/style.css?v=3.0">
   <style>
     .student-layout { display: grid; grid-template-columns: 280px 1fr; gap: 28px; }
     @media(max-width:960px){ .student-layout{grid-template-columns:1fr;} }
@@ -146,6 +146,7 @@
       <a href="/admin" class="nav-link">Admin</a>
       <a href="/teacher" class="nav-link">Teacher</a>
       <a href="/student" class="nav-link active">Student</a>
+      <a href="/logout" class="nav-link" style="color:var(--danger)">Logout</a>
     </div>
   </nav>
 
@@ -153,111 +154,44 @@
     <div class="section-title">🎓 Student Panel</div>
     <div class="section-subtitle">Enroll in classes and drag them into your weekly timetable</div>
 
-    <!-- Enroll Section -->
-    <div class="card enroll-card">
-      <div class="card-header">
-        <div class="card-title">📋 Enroll in a Class</div>
-      </div>
-      <form action="/enroll-student" method="post" style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;">
-        <div class="form-group" style="flex:1;min-width:180px;margin:0;">
-          <label class="form-label">Student</label>
-          <select name="student_id" class="form-control" required>
-            {% for student in students %}
-              <option value="{{ student.id }}">{{ student.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-group" style="flex:1;min-width:200px;margin:0;">
-          <label class="form-label">Class / Course</label>
-          <select name="class_id" class="form-control" required>
-            {% for cls in classes %}
-              <option value="{{ cls.id }}">{{ cls.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div style="padding-bottom:1px;">
-          <button type="submit" class="btn btn-primary">➕ Enroll</button>
-        </div>
-      </form>
-    </div>
-
+    <!-- Main Layout -->
     <div class="student-layout">
-      <!-- LEFT: Enrolled Classes -->
+      <!-- LEFT: Available Classes -->
       <div>
         <div class="card" style="margin-bottom:20px;">
           <div class="card-header">
-            <div class="card-title">My Courses</div>
-            <span class="badge badge-theory">{{ enrollments|length }}</span>
+            <div class="card-title">📚 Available Courses</div>
           </div>
-          {% for enr in enrollments %}
+          <div style="font-size:12px;color:var(--text-light);margin-bottom:16px;">Click a course to enroll or unenroll and view its schedule on your calendar.</div>
+          
+          <div class="courses-list" style="display:flex;flex-direction:column;gap:10px;">
             {% for cls in classes %}
-              {% if cls.id == enr.class_id %}
-              <div class="enrolled-course">
-                <div class="enrolled-avatar">📚</div>
-                <div>
-                  <div class="enrolled-name">{{ cls.name }}</div>
-                  <div class="enrolled-meta">Class ID #{{ cls.id }}</div>
+              {% set ns = namespace(enrolled=false) %}
+              {% for enr in enrollments %}
+                {% if enr.class_id == cls.id %}
+                  {% set ns.enrolled = true %}
+                {% endif %}
+              {% endfor %}
+              
+              <div class="card-btn {% if ns.enrolled %}enrolled-active{% endif %}" 
+                   style="display:flex;align-items:center;padding:12px;cursor:pointer;border-radius:12px;background:var(--surface);box-shadow:var(--neu-flat);border: 2px solid {% if ns.enrolled %}var(--primary){% else %}transparent{% endif %};transition:all 0.2s;"
+                   onclick="toggleEnrollment({{ cls.id }})">
+                <div class="cls-dot" style="width:12px;height:12px;border-radius:50%;margin-right:12px;background:{% if ns.enrolled %}var(--primary){% else %}var(--text-light){% endif %};"></div>
+                <div style="flex:1;">
+                  <div class="cls-name" style="font-weight:600;color:var(--text);font-size:14px;">{{ cls.name }}</div>
+                  <div class="cls-teacher" style="font-size:12px;color:var(--text-light);">Teacher #{{ cls.teacher_id }}</div>
                 </div>
+                {% if ns.enrolled %}
+                  <span class="badge badge-success cls-badge" style="font-size:10px;padding:4px 8px;">Enrolled</span>
+                {% else %}
+                  <span class="badge badge-theory cls-badge" style="font-size:10px;padding:4px 8px;">+ Enroll</span>
+                {% endif %}
               </div>
-              {% endif %}
             {% endfor %}
-          {% endfor %}
-          {% if not enrollments %}
-            <div class="empty-cal">
-              <div style="font-size:32px;">📋</div>
-              <div>No enrollments yet.<br>Use the form above to enroll.</div>
-            </div>
-          {% endif %}
-        </div>
-
-        <!-- Drag from here -->
-        <div class="sidebar-panel">
-          <h3>🖱 Drag to Schedule</h3>
-          <p style="font-size:12px;color:var(--text-light);margin-bottom:12px;">Drag a class onto a free slot in the calendar →</p>
-          {% for enr in enrollments %}
-            {% for cls in classes %}
-              {% if cls.id == enr.class_id %}
-              <div class="available-class"
-                data-draggable="true"
-                data-class-id="{{ cls.id }}"
-                data-class-name="{{ cls.name }}"
-                data-subject-name="{{ cls.name }}"
-                data-teacher-name="Teacher {{ cls.teacher_id }}"
-                data-chip-type="theory"
-                draggable="true"
-              >
-                <div class="cls-dot"></div>
-                <div>
-                  <div class="cls-name">{{ cls.name }}</div>
-                  <div class="cls-teacher">Teacher #{{ cls.teacher_id }}</div>
-                </div>
-                <span class="badge badge-theory cls-badge">Theory</span>
-              </div>
-              {% if cls.id == enr.class_id %}
-              <div class="available-class"
-                data-draggable="true"
-                data-class-id="{{ cls.id }}"
-                data-class-name="{{ cls.name }} (Lab)"
-                data-subject-name="{{ cls.name }}"
-                data-teacher-name="Teacher {{ cls.teacher_id }}"
-                data-chip-type="lab"
-                draggable="true"
-                style="border-left: 3px solid var(--accent);"
-              >
-                <div class="cls-dot" style="background: linear-gradient(135deg, var(--accent), #d4783e);"></div>
-                <div>
-                  <div class="cls-name">{{ cls.name }}</div>
-                  <div class="cls-teacher">Lab Session</div>
-                </div>
-                <span class="badge badge-lab cls-badge">Lab</span>
-              </div>
-              {% endif %}
-              {% endif %}
-            {% endfor %}
-          {% endfor %}
-          {% if not enrollments %}
-            <div class="empty-cal"><div style="font-size:24px;">📭</div><div>Enroll in a class first</div></div>
-          {% endif %}
+            {% if not classes %}
+              <div class="empty-cal"><div style="font-size:24px;">📭</div><div>No classes available</div></div>
+            {% endif %}
+          </div>
         </div>
       </div>
 
@@ -265,7 +199,7 @@
       <div class="card">
         <div class="card-header">
           <div class="card-title">📆 Weekly Timetable</div>
-          <span class="badge badge-success">Drag classes here</span>
+          <span class="badge badge-primary">Read Only</span>
         </div>
 
         <div class="cal-wrapper">
@@ -305,7 +239,7 @@
     </div>
   </div>
 
-  <script src="/static/js/script.js"></script>
+  <script src="/static/js/script.js?v=3.0"></script>
   <script>
   // Parse timetable and class data from server
   const ttRows = JSON.parse(document.getElementById('ttData').textContent || '[]');
@@ -386,11 +320,7 @@
           } else {
             cell.dataset.timeslotId = daySlot.id;
             cell.dataset.day = day;
-            // Drop zone
-            cell.addEventListener('dragover', (e) => { e.preventDefault(); cell.classList.add('drag-over'); });
-            cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
-            cell.addEventListener('drop', handleCellDrop);
-            // Render scheduled chips
+            // Only render scheduled chips. No drag-and-drop.
             if (scheduled[daySlot.id]) {
               scheduled[daySlot.id].forEach(classId => {
                 const chip = document.createElement('div');
@@ -411,48 +341,25 @@
     });
 
     calBody.appendChild(grid);
-
-    // Re-init drag on draggable items
-    initDragDrop();
   }
 
-  async function handleCellDrop(e) {
-    e.preventDefault();
-    this.classList.remove('drag-over');
-    if (!draggedData) return;
-
-    const timeslotId = this.dataset.timeslotId;
-    const body = new URLSearchParams({
-      class_id: draggedData.classId,
-      timeslot_id: timeslotId,
-      entry_type: draggedData.chipType
-    });
-
+  async function toggleEnrollment(classId) {
     try {
-      const resp = await fetch('/create-timetable', {
+      const resp = await fetch('/toggle-enroll', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body,
-        redirect: 'manual'
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ class_id: classId })
       });
-
-      if (resp.ok || resp.type === 'opaqueredirect' || resp.status === 0) {
-        const chip = document.createElement('div');
-        chip.className = `scheduled-chip ${draggedData.chipType === 'lab' ? 'lab-chip' : ''}`;
-        chip.innerHTML = `<span>${draggedData.chipType === 'lab' ? '🔬' : '📚'}</span><span>${draggedData.subjectName}</span>`;
-        this.appendChild(chip);
-        showToast(`${draggedData.className} scheduled!`, 'success');
-        if (draggedItem) draggedItem.remove();
-        setTimeout(() => location.reload(), 1000);
+      if (resp.ok) {
+        showToast('Enrollment updated!', 'success');
+        setTimeout(() => location.reload(), 300);
       } else {
-        showToast('Time slot may already be occupied', 'error');
+        const data = await resp.json();
+        showToast(data.error || 'Failed to update', 'error');
       }
-    } catch (err) {
+    } catch (e) {
       showToast('Connection error', 'error');
     }
-
-    draggedData = null;
-    draggedItem = null;
   }
 
   buildCalendar();
